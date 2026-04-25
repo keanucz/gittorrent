@@ -14,16 +14,16 @@ Implement `lib/object-store.js` so all tests in `test/object-store.test.js` pass
 
 ## Acceptance Criteria
 
-- [ ] `npm test -- --test-name-pattern object-store` passes all tests.
-- [ ] `createObjectStore(db)` returns an object with `has`, `get`, `put` methods.
-- [ ] `put(sha, objectBytes)` validates the SHA against `/^[0-9a-f]{40}$/` and throws `TypeError` with a descriptive message if invalid.
-- [ ] `put(sha, objectBytes)` gzip-compresses `objectBytes` before writing to Hyperbee.
-- [ ] `get(sha)` validates the SHA, returns `null` for missing entries, and gunzip-decompresses the stored value before returning.
-- [ ] `has(sha)` validates the SHA and returns a boolean.
-- [ ] Pino child logger with `component: 'object-store'` logs at `debug` for each `put`/`get`/miss action.
-- [ ] Log entries include `sha` and `action` fields (`'put'`, `'get'`, `'miss'`).
-- [ ] No `repoKey` in log entries here — that context is added by the caller.
-- [ ] Linter clean.
+- [x] `npm test -- --test-name-pattern object-store` passes all tests.
+- [x] `createObjectStore(db)` returns an object with `has`, `get`, `put` methods.
+- [x] `put(sha, objectBytes)` validates the SHA against `/^[0-9a-f]{40}$/` and throws `TypeError` with a descriptive message if invalid.
+- [x] `put(sha, objectBytes)` gzip-compresses `objectBytes` before writing to Hyperbee.
+- [x] `get(sha)` validates the SHA, returns `null` for missing entries, and gunzip-decompresses the stored value before returning.
+- [x] `has(sha)` validates the SHA and returns a boolean.
+- [x] Pino child logger with `component: 'object-store'` logs at `debug` for each `put`/`get`/miss action.
+- [x] Log entries include `sha` and `action` fields (`'put'`, `'get'`, `'miss'`).
+- [x] No `repoKey` in log entries here — that context is added by the caller.
+- [x] Linter clean.
 
 ## Key implementation notes
 
