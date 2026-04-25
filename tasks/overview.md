@@ -14,7 +14,7 @@
 | 08 | Tests for secrets.js | tdd-test-writer | 04 | [x] |
 | 09 | secrets.js — X25519 derivation, seal/open, encrypt/decrypt | backend-dev | 08, 05 | [x] |
 | 10 | Tests for autobase-repo.js | tdd-test-writer | 03, 05 | [x] |
-| 11 | autobase-repo.js — Autobase wrapper and deterministic apply() | backend-dev | 10, 07, 09 | [ ] |
+| 11 | autobase-repo.js — Autobase wrapper and deterministic apply() | backend-dev | 10, 07, 09 | [x] |
 | 12 | Tests for swarm.js | tdd-test-writer | 01 | [ ] |
 | 13 | swarm.js — Hyperswarm peer lifecycle and Corestore replication | backend-dev | 12, 11 | [ ] |
 | 14 | Tests for remote-helper.js | tdd-test-writer | 03 | [x] |
