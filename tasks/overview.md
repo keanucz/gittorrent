@@ -9,8 +9,8 @@
 | 03 | codec.js — compact-encoding schemas for all 6 op types | backend-dev | 02 | [ ] |
 | 04 | Tests for identity.js | tdd-test-writer | 01 | [ ] |
 | 05 | identity.js — ed25519 keypair load/create/sign/verify | backend-dev | 04 | [ ] |
-| 06 | Tests for object-store.js | tdd-test-writer | 01 | [ ] |
-| 07 | object-store.js — Hyperbee content-addressed git object store | backend-dev | 06 | [ ] |
+| 06 | Tests for object-store.js | tdd-test-writer | 01 | [x] |
+| 07 | object-store.js — Hyperbee content-addressed git object store | backend-dev | 06 | [x] |
 | 08 | Tests for secrets.js | tdd-test-writer | 04 | [ ] |
 | 09 | secrets.js — X25519 derivation, seal/open, encrypt/decrypt | backend-dev | 08, 05 | [ ] |
 | 10 | Tests for autobase-repo.js | tdd-test-writer | 03, 05 | [ ] |

@@ -29,20 +29,20 @@ export function createObjectStore(db: Hyperbee): ObjectStore
 
 ## Acceptance Criteria
 
-- [ ] `test/object-store.test.js` exists and fails when `lib/object-store.js` does not exist.
-- [ ] Test setup creates an in-memory Hypercore + Hyperbee (using `RAM` storage from `hypercore`).
-- [ ] Test: `has(sha)` returns `false` for a SHA that has not been put.
-- [ ] Test: `put(sha, bytes)` followed by `has(sha)` returns `true`.
-- [ ] Test: `put(sha, bytes)` followed by `get(sha)` returns a Buffer deep-equal to the original `bytes` (gzip round-trip is transparent to the caller).
-- [ ] Test: `get(sha)` for a SHA that was never put returns `null`.
-- [ ] Test: `put` with an invalid SHA (not 40-char hex) throws or rejects with a descriptive error.
-- [ ] Test: `has` with an invalid SHA throws or rejects.
-- [ ] Test: `get` with an invalid SHA throws or rejects.
-- [ ] Test: storing and retrieving a large object (100 KB random bytes) round-trips correctly.
-- [ ] Test: storing two different objects with different SHAs returns each independently.
-- [ ] Test: values stored in Hyperbee are gzip-compressed (verify by reading the raw Hyperbee entry and checking it is NOT equal to the original bytes — i.e., compression actually happened).
-- [ ] All tests use `node:test` and `node:assert/strict`.
-- [ ] Tests are self-contained with no file system side effects (use in-memory storage).
+- [x] `test/object-store.test.js` exists and fails when `lib/object-store.js` does not exist.
+- [x] Test setup creates an in-memory Hypercore + Hyperbee (using `RAM` storage from `hypercore`).
+- [x] Test: `has(sha)` returns `false` for a SHA that has not been put.
+- [x] Test: `put(sha, bytes)` followed by `has(sha)` returns `true`.
+- [x] Test: `put(sha, bytes)` followed by `get(sha)` returns a Buffer deep-equal to the original `bytes` (gzip round-trip is transparent to the caller).
+- [x] Test: `get(sha)` for a SHA that was never put returns `null`.
+- [x] Test: `put` with an invalid SHA (not 40-char hex) throws or rejects with a descriptive error.
+- [x] Test: `has` with an invalid SHA throws or rejects.
+- [x] Test: `get` with an invalid SHA throws or rejects.
+- [x] Test: storing and retrieving a large object (100 KB random bytes) round-trips correctly.
+- [x] Test: storing two different objects with different SHAs returns each independently.
+- [x] Test: values stored in Hyperbee are gzip-compressed (verify by reading the raw Hyperbee entry and checking it is NOT equal to the original bytes — i.e., compression actually happened).
+- [x] All tests use `node:test` and `node:assert/strict`.
+- [x] Tests are self-contained with no file system side effects (use in-memory storage).
 
 ## Testing requirements
 
