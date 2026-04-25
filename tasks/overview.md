@@ -28,7 +28,7 @@
 | 22 | pear-git seed subcommand | backend-dev | 21, 18 | [ ] |
 | 23 | Tests for pear-git status | tdd-test-writer | 11 | [ ] |
 | 24 | pear-git status subcommand | backend-dev | 23, 18 | [ ] |
-| 25 | Tests for pear-git secrets subcommands | tdd-test-writer | 09, 11 | [ ] |
-| 26 | pear-git secrets add, get, list, rm, rotate | backend-dev | 25, 20 | [ ] |
+| 25 | Tests for pear-git secrets subcommands | tdd-test-writer | 09, 11 | [x] |
+| 26 | pear-git secrets add, get, list, rm, rotate | backend-dev | 25, 20 | [x] |
 | 27 | e2e test: clone-push-pull with two in-process peers | tdd-test-writer | 16, 26 | [ ] |
 | 28 | build and install scripts | backend-dev | 16, 26 | [ ] |
