@@ -35,6 +35,25 @@ async function dispatch () {
     case 'revoke':
       await runRepoCommand('../lib/commands/revoke.js')
       break
+    case 'status': {
+      const [{ run }, { loadRepoForCwd }] = await Promise.all([
+        import('../lib/commands/status.js'),
+        import('../lib/commands/load-repo.js')
+      ])
+      const ctx = await loadRepoForCwd()
+      const stubSwarm = { connectedPeers: (_key) => 0 }
+      try {
+        await run(args, {
+          repo: ctx.repo,
+          swarm: stubSwarm,
+          output: process.stdout,
+          stderr: process.stderr
+        })
+      } finally {
+        await ctx.close()
+      }
+      break
+    }
     case 'seed': {
       const m = await import('../lib/commands/seed.js')
       await m.run(args)
