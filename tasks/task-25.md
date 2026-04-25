@@ -34,47 +34,32 @@ export async function runRotate(args, opts): Promise<void>
 
 ## Acceptance Criteria
 
-- [ ] `test/pear-git-secrets.test.js` exists and fails when `lib/commands/secrets.js` does not exist.
-
-### secrets add
-
-- [ ] Test: `add .env` reads a local `.env` file, encrypts it, stores in the secrets Hyperbee, stdout `Added .env (key version: 1)`.
-- [ ] Test: `add .env --name config/.env` stores under key `config/.env`.
-- [ ] Test: first `add` when `keyVersion === 0` generates a new key, appends a `secrets-key-envelope` op for self.
-- [ ] Test: `add` when not a writer exits 2.
-- [ ] Test: `add` when no secrets key is available exits 2 with appropriate error.
-- [ ] Test: `add` with an invalid store path (contains `..`) exits 2 with path validation error.
-- [ ] Test: `add` with a path exceeding 255 chars exits 2.
-
-### secrets get
-
-- [ ] Test: `get .env` decrypts and prints content to stdout.
-- [ ] Test: `get .env --output /tmp/out.env` writes decrypted content to the output file.
-- [ ] Test: `get` for a non-existent path exits 2 with "path not found".
-- [ ] Test: `get` when key version of stored file does not match available key version exits 2 with "key version mismatch".
-- [ ] Test: `get` when no secrets key envelope exists exits 2.
-
-### secrets list
-
-- [ ] Test: `list` with no secrets outputs nothing (or empty line).
-- [ ] Test: `list` with two secrets outputs their paths, one per line.
-- [ ] Test: `list --json` outputs a JSON array of paths.
-- [ ] Test: `list` exits 2 when no secrets key available.
-
-### secrets rm
-
-- [ ] Test: `rm .env` deletes the entry, stdout `Removed .env`.
-- [ ] Test: `rm` for a non-existent path exits 2.
-- [ ] Test: `rm` when not a writer exits 2.
-
-### secrets rotate (indexer only)
-
-- [ ] Test: `rotate` generates a new key, re-encrypts all files with the new key, appends `secrets-key-rotate` op + one `secrets-key-envelope` op per current writer.
-- [ ] Test: `rotate` stdout: `Rotated to key version 2. Re-encrypted 2 files.`
-- [ ] Test: `rotate` exits 2 when caller is not an indexer.
-- [ ] Test: `rotate` exits 2 when no secrets key exists yet.
-- [ ] All tests use in-memory mocks for the repo, secrets Hyperbee, and identity.
-- [ ] All tests use `node:test` and `node:assert/strict`.
+- [x] `test/pear-git-secrets.test.js` exists and fails when `lib/commands/secrets.js` does not exist.
+- [x] Test: `add .env` reads a local `.env` file, encrypts it, stores in the secrets Hyperbee, stdout `Added .env (key version: 1)`.
+- [x] Test: `add .env --name config/.env` stores under key `config/.env`.
+- [x] Test: first `add` when `keyVersion === 0` generates a new key, appends a `secrets-key-envelope` op for self.
+- [x] Test: `add` when not a writer exits 2.
+- [x] Test: `add` when no secrets key is available exits 2 with appropriate error.
+- [x] Test: `add` with an invalid store path (contains `..`) exits 2 with path validation error.
+- [x] Test: `add` with a path exceeding 255 chars exits 2.
+- [x] Test: `get .env` decrypts and prints content to stdout.
+- [x] Test: `get .env --output /tmp/out.env` writes decrypted content to the output file.
+- [x] Test: `get` for a non-existent path exits 2 with "path not found".
+- [x] Test: `get` when key version of stored file does not match available key version exits 2 with "key version mismatch".
+- [x] Test: `get` when no secrets key envelope exists exits 2.
+- [x] Test: `list` with no secrets outputs nothing (or empty line).
+- [x] Test: `list` with two secrets outputs their paths, one per line.
+- [x] Test: `list --json` outputs a JSON array of paths.
+- [x] Test: `list` exits 2 when no secrets key available.
+- [x] Test: `rm .env` deletes the entry, stdout `Removed .env`.
+- [x] Test: `rm` for a non-existent path exits 2.
+- [x] Test: `rm` when not a writer exits 2.
+- [x] Test: `rotate` generates a new key, re-encrypts all files with the new key, appends `secrets-key-rotate` op + one `secrets-key-envelope` op per current writer.
+- [x] Test: `rotate` stdout: `Rotated to key version 2. Re-encrypted 2 files.`
+- [x] Test: `rotate` exits 2 when caller is not an indexer.
+- [x] Test: `rotate` exits 2 when no secrets key exists yet.
+- [x] All tests use in-memory mocks for the repo, secrets Hyperbee, and identity.
+- [x] All tests use `node:test` and `node:assert/strict`.
 
 ## Testing requirements
 

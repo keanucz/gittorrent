@@ -23,6 +23,7 @@ async function runRepoCommand (commandModulePath) {
     await m.run(args, {
       repo: ctx.repo,
       identity: ctx.identity,
+      corestore: ctx.corestore,
       streams: { stdout: process.stdout, stderr: process.stderr }
     })
   } finally {
