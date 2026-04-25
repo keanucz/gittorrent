@@ -34,6 +34,11 @@ async function dispatch () {
     case 'revoke':
       await runRepoCommand('../lib/commands/revoke.js')
       break
+    case 'seed': {
+      const m = await import('../lib/commands/seed.js')
+      await m.run(args)
+      break
+    }
     default:
       process.stderr.write(`pear-git: unknown subcommand: ${sub}\n`)
       process.exit(1)

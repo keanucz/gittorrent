@@ -15,17 +15,17 @@ Implement `pear-git seed`, a long-lived process that joins the Hyperswarm for on
 
 ## Acceptance Criteria
 
-- [ ] `npm test -- --test-name-pattern pear-git-seed` passes all tests.
-- [ ] `run(args, opts)` parses `pear://` URLs from args and from `PEAR_GIT_SEEDER_KEYS` env var.
-- [ ] For each repo key: calls `swarm.join(repoKey)` (using the SwarmManager from lib/swarm.js).
-- [ ] On `swarm` peer-joined event: writes `{ "event": "peer-joined", "repoKey": "<base58>", "peerId": "<hex>", "time": <ms> }` as a JSON line to stdout.
-- [ ] On `swarm` peer-left event: writes `{ "event": "peer-left", ... }` JSON line.
-- [ ] On blocks synced: writes `{ "event": "blocks-synced", "repoKey": "<base58>", "count": <n>, "time": <ms> }` JSON line.
-- [ ] `--human` flag: writes formatted human-readable lines instead of JSON (e.g. `[10:32:15] peer joined gK3p... (ab12...)`).
-- [ ] On `SIGINT` or `SIGTERM`: calls `swarm.destroy()` for all repos and exits 0.
-- [ ] If `opts.signal` is provided (for testing): listens to `abort` event as the shutdown trigger.
-- [ ] If no repos are specified (no args, no env var): exits 1 with `pear-git: error: no repos to seed`.
-- [ ] Linter clean.
+- [x] `npm test -- --test-name-pattern pear-git-seed` passes all tests.
+- [x] `run(args, opts)` parses `pear://` URLs from args and from `PEAR_GIT_SEEDER_KEYS` env var.
+- [x] For each repo key: calls `swarm.join(repoKey)` (using the SwarmManager from lib/swarm.js).
+- [x] On `swarm` peer-joined event: writes `{ "event": "peer-joined", "repoKey": "<base58>", "peerId": "<hex>", "time": <ms> }` as a JSON line to stdout.
+- [x] On `swarm` peer-left event: writes `{ "event": "peer-left", ... }` JSON line.
+- [x] On blocks synced: writes `{ "event": "blocks-synced", "repoKey": "<base58>", "count": <n>, "time": <ms> }` JSON line.
+- [x] `--human` flag: writes formatted human-readable lines instead of JSON (e.g. `[10:32:15] peer joined gK3p... (ab12...)`).
+- [x] On `SIGINT` or `SIGTERM`: calls `swarm.destroy()` for all repos and exits 0.
+- [x] If `opts.signal` is provided (for testing): listens to `abort` event as the shutdown trigger.
+- [x] If no repos are specified (no args, no env var): exits 1 with `pear-git: error: no repos to seed`.
+- [x] Linter clean.
 
 ## Key implementation notes
 
