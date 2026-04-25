@@ -26,8 +26,8 @@
 | 20 | pear-git invite and revoke subcommands | backend-dev | 19, 18, 09 | [x] |
 | 21 | Tests for pear-git seed | tdd-test-writer | 13 | [x] |
 | 22 | pear-git seed subcommand | backend-dev | 21, 18 | [x] |
-| 23 | Tests for pear-git status | tdd-test-writer | 11 | [ ] |
-| 24 | pear-git status subcommand | backend-dev | 23, 18 | [ ] |
+| 23 | Tests for pear-git status | tdd-test-writer | 11 | [x] |
+| 24 | pear-git status subcommand | backend-dev | 23, 18 | [x] |
 | 25 | Tests for pear-git secrets subcommands | tdd-test-writer | 09, 11 | [ ] |
 | 26 | pear-git secrets add, get, list, rm, rotate | backend-dev | 25, 20 | [ ] |
 | 27 | e2e test: clone-push-pull with two in-process peers | tdd-test-writer | 16, 26 | [ ] |
