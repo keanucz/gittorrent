@@ -11,6 +11,10 @@
     "build": "bash scripts/build.sh",
     "install:bins": "bash scripts/install.sh"
   },
+  "bin": {
+    "git-remote-pear": "./bin/git-remote-pear",
+    "pear-git": "./bin/pear-git"
+  },
   "dependencies": {
     "autobase": "^6",
     "bs58": "*",
