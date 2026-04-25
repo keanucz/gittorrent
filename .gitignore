@@ -9,3 +9,4 @@ tmp-test/
 secrets/
 .pear-git/
 .claude
+.claude-octopus/
