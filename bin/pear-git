@@ -1,5 +1,14 @@
 #!/usr/bin/env node
+import { join } from 'node:path'
+import { homedir } from 'node:os'
+import bs58 from 'bs58'
+import Corestore from 'corestore'
+import Hyperbee from 'hyperbee'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import { CliError } from '../lib/commands/cli-error.js'
+
+const execFileAsync = promisify(execFile)
 
 const sub = process.argv[2]
 const args = process.argv.slice(3)
@@ -34,6 +43,47 @@ async function dispatch () {
     case 'revoke':
       await runRepoCommand('../lib/commands/revoke.js')
       break
+    case 'secrets': {
+      const secretsSub = args[0]
+      const secretsArgs = args.slice(1)
+      const { runAdd, runGet, runList, runRm, runRotate } = await import('../lib/commands/secrets.js')
+      const { loadRepoForCwd } = await import('../lib/commands/load-repo.js')
+      const ctx = await loadRepoForCwd()
+      // Open the secrets Hyperbee (separate from the Autobase view)
+      const dataDir = process.env.PEAR_GIT_DATA_DIR || join(homedir(), '.pear-git')
+      const { stdout: originOut } = await execFileAsync('git', ['remote', 'get-url', 'origin'], { cwd: process.cwd() })
+      const encoded = originOut.trim().replace(/^pear:\/\//, '')
+      const repoKey = Buffer.from(bs58.decode(encoded))
+      const storePath = join(dataDir, 'stores', bs58.encode(repoKey))
+      const secretsCorestore = new Corestore(storePath)
+      await secretsCorestore.ready()
+      const secretsCore = secretsCorestore.get({ name: 'secrets' })
+      const secretsDb = new Hyperbee(secretsCore, { keyEncoding: 'utf-8', valueEncoding: 'binary' })
+      await secretsDb.ready()
+      const secretsOpts = {
+        repo: ctx.repo,
+        identity: ctx.identity,
+        secretsDb,
+        streams: { stdout: process.stdout, stderr: process.stderr }
+      }
+      try {
+        switch (secretsSub) {
+          case 'add': await runAdd(secretsArgs, secretsOpts); break
+          case 'get': await runGet(secretsArgs, secretsOpts); break
+          case 'list': await runList(secretsArgs, secretsOpts); break
+          case 'rm': await runRm(secretsArgs, secretsOpts); break
+          case 'rotate': await runRotate(secretsArgs, secretsOpts); break
+          default:
+            process.stderr.write(`pear-git: unknown secrets subcommand: ${secretsSub}\n`)
+            process.exit(1)
+        }
+      } finally {
+        await ctx.close()
+        await secretsDb.close()
+        await secretsCorestore.close()
+      }
+      break
+    }
     default:
       process.stderr.write(`pear-git: unknown subcommand: ${sub}\n`)
       process.exit(1)

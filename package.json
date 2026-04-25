@@ -21,7 +21,7 @@
     "compact-encoding": "*",
     "corestore": "^6.18.4",
     "hyperbee": "^2.19.0",
-    "hypercore": "*",
+    "hypercore": "^10.38.2",
     "hyperswarm": "*",
     "pino": "*",
     "sodium-native": "*"

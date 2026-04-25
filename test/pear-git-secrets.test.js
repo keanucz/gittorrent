@@ -1,4 +1,4 @@
-import { describe, test, before } from 'node:test'
+import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -64,7 +64,7 @@ function makeIdentityAndSecretsView () {
 /** secretsView that reports no key envelope and keyVersion === 0 */
 function makeNoKeySecretsView () {
   return {
-    async get (_key) { return null }
+    async get () { return null }
   }
 }
 
@@ -109,7 +109,7 @@ async function writeSecretEntry (db, storePath, plaintext, secretsKey, keyVersio
 
 describe('pear-git secrets add', () => {
   test('1: reads and stores a file, stdout reports Added <path> (key version: 1)', async () => {
-    const { identity, secretsView, secretsKey } = makeIdentityAndSecretsView()
+    const { identity, secretsView } = makeIdentityAndSecretsView()
     const secretsDb = makeDb()
     await secretsDb.ready()
     const ops = []
@@ -345,7 +345,7 @@ describe('pear-git secrets get', () => {
       const written = fs.readFileSync(outFile)
       assert.equal(written.toString(), 'SECRET=world')
     } finally {
-      try { fs.unlinkSync(outFile) } catch (_) {}
+      try { fs.unlinkSync(outFile) } catch { /* ignore cleanup error */ }
     }
   })
 
