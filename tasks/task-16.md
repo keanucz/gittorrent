@@ -14,26 +14,26 @@ Implement `bin/git-remote-pear`, the executable entry point that git invokes for
 
 ## Acceptance Criteria
 
-- [ ] `bin/git-remote-pear` is executable (has `#!/usr/bin/env node` shebang and `chmod +x` mode).
-- [ ] The file starts with `#!/usr/bin/env node` as the very first line.
-- [ ] Pino root logger is configured with `destination: pino.destination({ fd: 2 })` before any other logging can occur.
-- [ ] Default log level for this binary is `warn` (override with `PEAR_GIT_LOG_LEVEL`).
-- [ ] Process args: `process.argv[2]` is the remote name, `process.argv[3]` is the `pear://<base58key>` URL.
-- [ ] The `pear://` URL is parsed to extract the base58 repo key and decoded to a 32-byte Buffer.
-- [ ] The data directory is read from `PEAR_GIT_DATA_DIR` (default `~/.pear-git`).
-- [ ] A Corestore is opened at `path.join(dataDir, 'stores', base58RepoKey)`.
-- [ ] `loadIdentity(dataDir)` is called to load/create the identity.
-- [ ] `openRepo(corestore, identity)` is called to open the Autobase repo.
-- [ ] `createSwarm(corestore)` is called and `join(repoKey)` is called before the helper starts.
-- [ ] `createObjectStore(db)` is called with the objects Hyperbee.
-- [ ] `createRemoteHelper({ input: process.stdin, output: process.stdout, ... })` is called.
-- [ ] On success: exits with code 0.
-- [ ] On general error: logs to stderr, exits with code 1.
-- [ ] On network error (no peers within timeout): logs to stderr, exits with code 3.
-- [ ] On ACL/permission error: exits with code 2.
-- [ ] No non-protocol bytes are ever written to stdout.
-- [ ] The working clone path is `path.join(process.cwd(), '.git')` (git sets cwd to the repo root before invoking the helper).
-- [ ] Linter clean.
+- [x] `bin/git-remote-pear` is executable (has `#!/usr/bin/env node` shebang and `chmod +x` mode).
+- [x] The file starts with `#!/usr/bin/env node` as the very first line.
+- [x] Pino root logger is configured with `destination: pino.destination({ fd: 2 })` before any other logging can occur.
+- [x] Default log level for this binary is `warn` (override with `PEAR_GIT_LOG_LEVEL`).
+- [x] Process args: `process.argv[2]` is the remote name, `process.argv[3]` is the `pear://<base58key>` URL.
+- [x] The `pear://` URL is parsed to extract the base58 repo key and decoded to a 32-byte Buffer.
+- [x] The data directory is read from `PEAR_GIT_DATA_DIR` (default `~/.pear-git`).
+- [x] A Corestore is opened at `path.join(dataDir, 'stores', base58RepoKey)`.
+- [x] `loadIdentity(dataDir)` is called to load/create the identity.
+- [x] `openRepo(corestore, identity)` is called to open the Autobase repo.
+- [x] `createSwarm(corestore)` is called and `join(repoKey)` is called before the helper starts.
+- [x] `createObjectStore(db)` is called with the objects Hyperbee.
+- [x] `createRemoteHelper({ input: process.stdin, output: process.stdout, ... })` is called.
+- [x] On success: exits with code 0.
+- [x] On general error: logs to stderr, exits with code 1.
+- [x] On network error (no peers within timeout): logs to stderr, exits with code 3.
+- [x] On ACL/permission error: exits with code 2.
+- [x] No non-protocol bytes are ever written to stdout.
+- [x] The working clone path is `path.join(process.cwd(), '.git')` (git sets cwd to the repo root before invoking the helper).
+- [x] Linter clean.
 
 ## Key implementation notes
 

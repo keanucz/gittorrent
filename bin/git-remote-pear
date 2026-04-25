@@ -1,0 +1,90 @@
+#!/usr/bin/env node
+
+import pino from 'pino'
+import bs58 from 'bs58'
+import path from 'node:path'
+import { homedir } from 'node:os'
+import Corestore from 'corestore'
+import Hyperbee from 'hyperbee'
+
+// Configure pino immediately to fd 2 (stderr)
+const rootLogger = pino(
+  {
+    level: process.env.PEAR_GIT_LOG_LEVEL || 'warn',
+    redact: ['identity.secretKey', 'secretKey', '*.secretKey', '[*].secretKey'],
+    base: { pid: process.pid }
+  },
+  pino.destination({ fd: 2 })
+)
+
+// Import modules AFTER pino is configured (or at least after we have our root logger)
+import { loadIdentity } from '../lib/identity.js'
+import { openRepo } from '../lib/autobase-repo.js'
+import { createObjectStore } from '../lib/object-store.js'
+import { createSwarm } from '../lib/swarm.js'
+import { createRemoteHelper } from '../lib/remote-helper.js'
+
+async function main () {
+  const remoteName = process.argv[2]
+  const url = process.argv[3]
+
+  if (!url || !url.startsWith('pear://')) {
+    process.stderr.write('git-remote-pear: error: expected pear:// URL\n')
+    process.exit(1)
+  }
+
+  const encoded = url.slice('pear://'.length)
+  let repoKey
+  try {
+    repoKey = Buffer.from(bs58.decode(encoded))
+  } catch {
+    process.stderr.write('git-remote-pear: error: invalid pear:// URL (bad base58)\n')
+    process.exit(1)
+  }
+
+  const dataDir = process.env.PEAR_GIT_DATA_DIR || path.join(homedir(), '.pear-git')
+  const base58RepoKey = bs58.encode(repoKey)
+  const storePath = path.join(dataDir, 'stores', base58RepoKey)
+  
+  rootLogger.debug({ remoteName, base58RepoKey, storePath }, 'starting remote helper')
+
+  const corestore = new Corestore(storePath)
+  await corestore.ready()
+
+  const identity = await loadIdentity(dataDir)
+  const repo = await openRepo(corestore, identity, { key: repoKey })
+
+  const objectsCore = corestore.get({ name: 'objects' })
+  const objectsDb = new Hyperbee(objectsCore, { keyEncoding: 'utf-8', valueEncoding: 'binary' })
+  await objectsDb.ready()
+  const objectStore = createObjectStore(objectsDb)
+
+  const swarm = await createSwarm(corestore)
+  await swarm.join(repoKey)
+
+  // Remote helper logic
+  try {
+    const exitCode = await createRemoteHelper({
+      input: process.stdin,
+      output: process.stdout,
+      repo,
+      objectStore,
+      workingClonePath: process.cwd(),
+      identity
+    })
+
+    await swarm.destroy()
+    await corestore.close()
+    process.exit(exitCode || 0)
+  } catch (err) {
+    rootLogger.error(err)
+    await swarm.destroy()
+    await corestore.close()
+    process.exit(1)
+  }
+}
+
+main().catch(err => {
+  process.stderr.write(`git-remote-pear: error: ${err.message}\n`)
+  process.exit(1)
+})

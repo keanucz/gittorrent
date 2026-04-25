@@ -18,8 +18,8 @@
 | 12 | Tests for swarm.js | tdd-test-writer | 01 | [x] |
 | 13 | swarm.js — Hyperswarm peer lifecycle and Corestore replication | backend-dev | 12, 11 | [x] |
 | 14 | Tests for remote-helper.js | tdd-test-writer | 03 | [x] |
-| 15 | remote-helper.js — stdin/stdout git remote helper protocol | backend-dev | 14, 11, 13 | [ ] |
-| 16 | bin/git-remote-pear — entry point | backend-dev | 15 | [ ] |
+| 15 | remote-helper.js — stdin/stdout git remote helper protocol | backend-dev | 14, 11, 13 | [x] |
+| 16 | bin/git-remote-pear — entry point | backend-dev | 15 | [x] |
 | 17 | Tests for pear-git init | tdd-test-writer | 11 | [x] |
 | 18 | pear-git init subcommand | backend-dev | 17, 13 | [x] |
 | 19 | Tests for pear-git invite and revoke | tdd-test-writer | 11 | [x] |

@@ -14,25 +14,25 @@ Implement `lib/remote-helper.js` so all tests in `test/remote-helper.test.js` pa
 
 ## Acceptance Criteria
 
-- [ ] `npm test -- --test-name-pattern remote-helper` passes all tests.
-- [ ] `createRemoteHelper(opts)` reads lines from `opts.input` and writes protocol responses to `opts.output`.
-- [ ] `capabilities` command responds with `fetch\npush\noption\n\n`.
-- [ ] `list` command reads all entries from `opts.repo.view` and outputs one `<sha> <refname>` line per ref, then a blank line.
-- [ ] `list` command outputs `@refs/heads/main HEAD\n` if `HEAD` is a symbolic ref (check if `HEAD` value starts with `@`).
-- [ ] `list` on an empty repo outputs just `\n`.
-- [ ] `option verbosity <n>` sets the pino log level (0→warn, 1→info, 2→debug) and responds `ok\n`.
-- [ ] `option progress <true|false>` enables/disables progress lines and responds `ok\n`.
-- [ ] Unknown `option` responds `unsupported\n`.
-- [ ] `push <src>:<dst>` handler: resolves src SHA in working clone, writes new objects to object store, appends ref-update op, responds `ok <dst>\n` or `error <dst> <reason>\n`.
-- [ ] `push` with leading `+` on src sets `force: true`.
-- [ ] `push` with empty src (`:refs/heads/dst`) calls delete path (append ref-update op with delete sentinel or null SHA).
-- [ ] After a successful push (all objects written, ref-update applied), an `objects-available` op is appended to the Autobase input core listing the new SHAs (max 256 per op; split into multiple ops if needed). This is a best-effort broadcast — failure to append does NOT cause the push to fail.
-- [ ] `fetch <sha> <refname>` handler: checks object store, decompresses objects, writes to working clone `.git/objects/`, recursively walks the object graph, responds with blank line on success.
-- [ ] Fetch `error <refname> object <sha> not found in swarm\n` on failure.
-- [ ] All log calls go to a pino logger configured with `destination: pino.destination({ fd: 2 })`.
-- [ ] Nothing non-protocol is written to `opts.output`.
-- [ ] Module exits or resolves the returned Promise when `opts.input` closes (stdin EOF from git).
-- [ ] Linter clean.
+- [x] `npm test -- --test-name-pattern remote-helper` passes all tests.
+- [x] `createRemoteHelper(opts)` reads lines from `opts.input` and writes protocol responses to `opts.output`.
+- [x] `capabilities` command responds with `fetch\npush\noption\n\n`.
+- [x] `list` command reads all entries from `opts.repo.view` and outputs one `<sha> <refname>` line per ref, then a blank line.
+- [x] `list` command outputs `@refs/heads/main HEAD\n` if `HEAD` is a symbolic ref (check if `HEAD` value starts with `@`).
+- [x] `list` on an empty repo outputs just `\n`.
+- [x] `option verbosity <n>` sets the pino log level (0→warn, 1→info, 2→debug) and responds `ok\n`.
+- [x] `option progress <true|false>` enables/disables progress lines and responds `ok\n`.
+- [x] Unknown `option` responds `unsupported\n`.
+- [x] `push <src>:<dst>` handler: resolves src SHA in working clone, writes new objects to object store, appends ref-update op, responds `ok <dst>\n` or `error <dst> <reason>\n`.
+- [x] `push` with leading `+` on src sets `force: true`.
+- [x] `push` with empty src (`:refs/heads/dst`) calls delete path (append ref-update op with delete sentinel or null SHA).
+- [x] After a successful push (all objects written, ref-update applied), an `objects-available` op is appended to the Autobase input core listing the new SHAs (max 256 per op; split into multiple ops if needed). This is a best-effort broadcast — failure to append does NOT cause the push to fail.
+- [x] `fetch <sha> <refname>` handler: checks object store, decompresses objects, writes to working clone `.git/objects/`, recursively walks the object graph, responds with blank line on success.
+- [x] Fetch `error <refname> object <sha> not found in swarm\n` on failure.
+- [x] All log calls go to a pino logger configured with `destination: pino.destination({ fd: 2 })`.
+- [x] Nothing non-protocol is written to `opts.output`.
+- [x] Module exits or resolves the returned Promise when `opts.input` closes (stdin EOF from git).
+- [x] Linter clean.
 
 ## Key implementation notes
 
