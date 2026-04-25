@@ -1,8 +1,10 @@
 node_modules/
 dist/
+tmp-test/
 .env
 .env.*
 !.env.example
 *.pem
 *.key
 secrets/
+.claude
