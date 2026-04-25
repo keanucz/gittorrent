@@ -34,11 +34,13 @@ The desktop app is an additional client, not a replacement for the existing CLI.
 ### 1) Presentation layer (frontend)
 
 Responsibilities:
+
 - Render pages and panels (Repos, Activity, Peers, Writers, Secrets, Settings).
 - Manage local UI state and optimistic transitions.
 - Never directly access disk, keys, or shell commands.
 
 Key modules:
+
 - `src/ui/routes/*` route-level screens.
 - `src/ui/components/*` reusable widgets.
 - `src/ui/state/*` store and query hooks.
@@ -47,31 +49,37 @@ Key modules:
 ### 2) Application layer (frontend service)
 
 Responsibilities:
+
 - Convert user intents to typed IPC calls.
 - Normalize backend responses and errors.
 - Handle retries, cancellation, and progress updates.
 
 Key module:
+
 - `src/ui/services/tauri-api.ts` typed wrappers over Tauri `invoke`.
 
 ### 3) Desktop bridge (Tauri commands in Rust)
 
 Responsibilities:
+
 - Expose a strict allowlist of commands.
 - Validate inputs and enforce path/url safety.
 - Spawn child processes only for approved binaries (`pear-git`, `git`).
 - Stream progress events to frontend via Tauri events.
 
 Key module:
+
 - `src-tauri/src/commands.rs`.
 
 ### 4) Domain/Protocol layer (existing JS code)
 
 Responsibilities:
+
 - Repo initialization, swarm join/leave, ACL ops, object/ref sync, secret encryption handling.
 - No UI assumptions.
 
 Key integration points:
+
 - `bin/pear-git` subcommands for user-facing operations.
 - `lib/autobase-repo.js`, `lib/swarm.js`, `lib/secrets.js`, `lib/remote-helper.js`.
 

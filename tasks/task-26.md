@@ -15,51 +15,51 @@ Implement all five `pear-git secrets` subcommands. This task implements the comp
 
 ## Acceptance Criteria
 
-- [ ] `npm test -- --test-name-pattern pear-git-secrets` passes all tests.
+- [x] `npm test -- --test-name-pattern pear-git-secrets` passes all tests.
 
 ### secrets add
 
-- [ ] Validates the store path against `/^[\w.\-\/]+$/`, no `..` components, max 255 chars. Exits 2 on violation.
-- [ ] Reads the local file content into a Buffer.
-- [ ] If `keyVersion === 0`: generates a new 32-byte random key, appends a `secrets-key-envelope` op for self, increments view version to 1.
-- [ ] Encrypts file content with `encryptFile(content, secretsKey)`.
-- [ ] Encodes value as `keyVersion(4 bytes LE) + nonce(24 bytes) + ciphertext` and writes to the secrets Hyperbee.
-- [ ] Stdout: `Added <store-path> (key version: <n>)`.
+- [x] Validates the store path against `/^[\w.\-\/]+$/`, no `..` components, max 255 chars. Exits 2 on violation.
+- [x] Reads the local file content into a Buffer.
+- [x] If `keyVersion === 0`: generates a new 32-byte random key, appends a `secrets-key-envelope` op for self, increments view version to 1.
+- [x] Encrypts file content with `encryptFile(content, secretsKey)`.
+- [x] Encodes value as `keyVersion(4 bytes LE) + nonce(24 bytes) + ciphertext` and writes to the secrets Hyperbee.
+- [x] Stdout: `Added <store-path> (key version: <n>)`.
 
 ### secrets get
 
-- [ ] Reads the secrets Hyperbee entry at the given path.
-- [ ] If not found: exits 2 with `pear-git: error: secret not found: <path>`.
-- [ ] Decodes `keyVersion` from the 4-byte LE prefix.
-- [ ] Gets the secrets key via `getMySecretsKey`.
-- [ ] If key version mismatches: exits 2 with `pear-git: error: key version mismatch — rotation in progress, retry shortly`.
-- [ ] Decrypts with `decryptFile(nonce, ciphertext, secretsKey)`.
-- [ ] Without `--output`: writes plaintext to stdout.
-- [ ] With `--output <path>`: writes to file (creates or overwrites).
+- [x] Reads the secrets Hyperbee entry at the given path.
+- [x] If not found: exits 2 with `pear-git: error: secret not found: <path>`.
+- [x] Decodes `keyVersion` from the 4-byte LE prefix.
+- [x] Gets the secrets key via `getMySecretsKey`.
+- [x] If key version mismatches: exits 2 with `pear-git: error: key version mismatch — rotation in progress, retry shortly`.
+- [x] Decrypts with `decryptFile(nonce, ciphertext, secretsKey)`.
+- [x] Without `--output`: writes plaintext to stdout.
+- [x] With `--output <path>`: writes to file (creates or overwrites).
 
 ### secrets list
 
-- [ ] Iterates all entries in the secrets Hyperbee.
-- [ ] Without `--json`: one path per line to stdout.
-- [ ] With `--json`: JSON array of path strings to stdout.
-- [ ] Exits 2 if no secrets key available (not a writer or no envelope).
+- [x] Iterates all entries in the secrets Hyperbee.
+- [x] Without `--json`: one path per line to stdout.
+- [x] With `--json`: JSON array of path strings to stdout.
+- [x] Exits 2 if no secrets key available (not a writer or no envelope).
 
 ### secrets rm
 
-- [ ] Deletes the entry from the secrets Hyperbee (`db.del(path)`).
-- [ ] If path not found: exits 2.
-- [ ] Verifies caller is a writer (has a secrets key envelope).
-- [ ] Stdout: `Removed <path>`.
+- [x] Deletes the entry from the secrets Hyperbee (`db.del(path)`).
+- [x] If path not found: exits 2.
+- [x] Verifies caller is a writer (has a secrets key envelope).
+- [x] Stdout: `Removed <path>`.
 
 ### secrets rotate
 
-- [ ] Verifies caller is an indexer. Exits 2 if not.
-- [ ] Reads all entries from the secrets Hyperbee.
-- [ ] Decrypts each with the old key, re-encrypts with the new key, writes back with `newKeyVersion`.
-- [ ] Appends a `secrets-key-rotate` Autobase op.
-- [ ] Appends a `secrets-key-envelope` op for every current writer.
-- [ ] Stdout: `Rotated to key version <n>. Re-encrypted <m> files.`
-- [ ] Linter clean.
+- [x] Verifies caller is an indexer. Exits 2 if not.
+- [x] Reads all entries from the secrets Hyperbee.
+- [x] Decrypts each with the old key, re-encrypts with the new key, writes back with `newKeyVersion`.
+- [x] Appends a `secrets-key-rotate` Autobase op.
+- [x] Appends a `secrets-key-envelope` op for every current writer.
+- [x] Stdout: `Rotated to key version <n>. Re-encrypted <m> files.`
+- [x] Linter clean.
 
 ## Key implementation notes
 

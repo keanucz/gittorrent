@@ -14,6 +14,7 @@ async function runRepoCommand (commandModulePath) {
     await m.run(args, {
       repo: ctx.repo,
       identity: ctx.identity,
+      corestore: ctx.corestore,
       streams: { stdout: process.stdout, stderr: process.stderr }
     })
   } finally {
@@ -39,6 +40,9 @@ async function dispatch () {
       await m.run(args)
       break
     }
+    case 'secrets':
+      await runRepoCommand('../lib/commands/secrets.js')
+      break
     default:
       process.stderr.write(`pear-git: unknown subcommand: ${sub}\n`)
       process.exit(1)
