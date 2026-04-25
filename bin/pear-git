@@ -1,14 +1,52 @@
 #!/usr/bin/env node
+import { CliError } from '../lib/commands/cli-error.js'
+
 const sub = process.argv[2]
 const args = process.argv.slice(3)
 
-switch (sub) {
-  case 'init': {
-    const m = await import('../lib/commands/init.js')
-    await m.run(args)
-    break
+async function runRepoCommand (commandModulePath) {
+  const [m, { loadRepoForCwd }] = await Promise.all([
+    import(commandModulePath),
+    import('../lib/commands/load-repo.js')
+  ])
+  const ctx = await loadRepoForCwd()
+  try {
+    await m.run(args, {
+      repo: ctx.repo,
+      identity: ctx.identity,
+      streams: { stdout: process.stdout, stderr: process.stderr }
+    })
+  } finally {
+    await ctx.close()
   }
-  default:
-    process.stderr.write(`pear-git: unknown subcommand: ${sub}\n`)
-    process.exit(1)
+}
+
+async function dispatch () {
+  switch (sub) {
+    case 'init': {
+      const m = await import('../lib/commands/init.js')
+      await m.run(args)
+      break
+    }
+    case 'invite':
+      await runRepoCommand('../lib/commands/invite.js')
+      break
+    case 'revoke':
+      await runRepoCommand('../lib/commands/revoke.js')
+      break
+    default:
+      process.stderr.write(`pear-git: unknown subcommand: ${sub}\n`)
+      process.exit(1)
+  }
+}
+
+try {
+  await dispatch()
+} catch (err) {
+  if (err instanceof CliError) {
+    process.exit(err.code)
+  }
+  const message = err && err.message ? err.message : String(err)
+  process.stderr.write('pear-git: error: ' + message + '\n')
+  process.exit(1)
 }
