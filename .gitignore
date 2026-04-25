@@ -7,4 +7,5 @@ tmp-test/
 *.pem
 *.key
 secrets/
+.pear-git/
 .claude
