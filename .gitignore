@@ -7,3 +7,4 @@ tmp-test/
 *.pem
 *.key
 secrets/
+.claude
