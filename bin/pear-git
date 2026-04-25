@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+const sub = process.argv[2]
+const args = process.argv.slice(3)
+
+switch (sub) {
+  case 'init': {
+    const m = await import('../lib/commands/init.js')
+    await m.run(args)
+    break
+  }
+  default:
+    process.stderr.write(`pear-git: unknown subcommand: ${sub}\n`)
+    process.exit(1)
+}
