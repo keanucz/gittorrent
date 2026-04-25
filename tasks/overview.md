@@ -4,7 +4,7 @@
 
 | ID | Title | Agent | Depends On | Status |
 |----|-------|-------|------------|--------|
-| 01 | Project scaffolding, package.json, test runner | backend-dev | — | [ ] |
+| 01 | Project scaffolding, package.json, test runner | backend-dev | — | [x] |
 | 02 | Tests for codec.js | tdd-test-writer | 01 | [ ] |
 | 03 | codec.js — compact-encoding schemas for all 6 op types | backend-dev | 02 | [ ] |
 | 04 | Tests for identity.js | tdd-test-writer | 01 | [ ] |
