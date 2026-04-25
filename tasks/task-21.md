@@ -23,17 +23,17 @@ export async function run(args: string[], opts: { dataDir, swarm?, signal? }): P
 
 ## Acceptance Criteria
 
-- [ ] `test/pear-git-seed.test.js` exists and fails when the seed command does not exist.
-- [ ] Test: `run([], opts)` with no args and no `PEAR_GIT_SEEDER_KEYS` exits with an appropriate error or no-op (no repos to seed).
-- [ ] Test: `run(['pear://<key>'], opts)` starts without error (with a mocked swarm).
-- [ ] Test: when a peer joins, stdout receives a JSON line matching `{ event: 'peer-joined', repoKey: string, peerId: string, time: number }`.
-- [ ] Test: when a peer leaves, stdout receives `{ event: 'peer-left', ... }`.
-- [ ] Test: `--human` flag switches output to a human-readable line instead of JSON.
-- [ ] Test: `PEAR_GIT_SEEDER_KEYS=pear://<key>` env var causes that repo to be seeded even when no args are given.
-- [ ] Test: `opts.signal` abort causes `run` to resolve cleanly (no unhandled rejection, mock swarm `destroy` is called).
-- [ ] Test: stdout output is valid JSON lines — each line parses with `JSON.parse` without error.
-- [ ] All tests use a mocked SwarmManager (not a real Hyperswarm).
-- [ ] All tests use `node:test` and `node:assert/strict`.
+- [x] `test/pear-git-seed.test.js` exists and fails when the seed command does not exist.
+- [x] Test: `run([], opts)` with no args and no `PEAR_GIT_SEEDER_KEYS` exits with an appropriate error or no-op (no repos to seed).
+- [x] Test: `run(['pear://<key>'], opts)` starts without error (with a mocked swarm).
+- [x] Test: when a peer joins, stdout receives a JSON line matching `{ event: 'peer-joined', repoKey: string, peerId: string, time: number }`.
+- [x] Test: when a peer leaves, stdout receives `{ event: 'peer-left', ... }`.
+- [x] Test: `--human` flag switches output to a human-readable line instead of JSON.
+- [x] Test: `PEAR_GIT_SEEDER_KEYS=pear://<key>` env var causes that repo to be seeded even when no args are given.
+- [x] Test: `opts.signal` abort causes `run` to resolve cleanly (no unhandled rejection, mock swarm `destroy` is called).
+- [x] Test: stdout output is valid JSON lines — each line parses with `JSON.parse` without error.
+- [x] All tests use a mocked SwarmManager (not a real Hyperswarm).
+- [x] All tests use `node:test` and `node:assert/strict`.
 
 ## Testing requirements
 
