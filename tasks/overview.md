@@ -7,8 +7,8 @@
 | 01 | Project scaffolding, package.json, test runner | backend-dev | — | [x] |
 | 02 | Tests for codec.js | tdd-test-writer | 01 | [ ] |
 | 03 | codec.js — compact-encoding schemas for all 6 op types | backend-dev | 02 | [ ] |
-| 04 | Tests for identity.js | tdd-test-writer | 01 | [ ] |
-| 05 | identity.js — ed25519 keypair load/create/sign/verify | backend-dev | 04 | [ ] |
+| 04 | Tests for identity.js | tdd-test-writer | 01 | [x] |
+| 05 | identity.js — ed25519 keypair load/create/sign/verify | backend-dev | 04 | [x] |
 | 06 | Tests for object-store.js | tdd-test-writer | 01 | [ ] |
 | 07 | object-store.js — Hyperbee content-addressed git object store | backend-dev | 06 | [ ] |
 | 08 | Tests for secrets.js | tdd-test-writer | 04 | [ ] |
