@@ -1,0 +1,27 @@
+{
+  "name": "gittorrent",
+  "version": "0.1.0",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test 'test/**/*.test.js'",
+    "lint": "find lib bin test -name '*.js' -print0 | xargs -0 -r node_modules/.bin/eslint",
+    "build": "bash scripts/build.sh",
+    "install:bins": "bash scripts/install.sh"
+  },
+  "dependencies": {
+    "autobase": "^6",
+    "hyperbee": "*",
+    "hyperswarm": "*",
+    "hypercore": "*",
+    "corestore": "*",
+    "compact-encoding": "*",
+    "sodium-native": "*",
+    "pino": "*",
+    "bs58": "*"
+  },
+  "devDependencies": {
+    "bare-bundle": "*",
+    "eslint": "*"
+  }
+}
