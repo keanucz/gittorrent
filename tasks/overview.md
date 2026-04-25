@@ -16,7 +16,7 @@
 | 10 | Tests for autobase-repo.js | tdd-test-writer | 03, 05 | [x] |
 | 11 | autobase-repo.js — Autobase wrapper and deterministic apply() | backend-dev | 10, 07, 09 | [x] |
 | 12 | Tests for swarm.js | tdd-test-writer | 01 | [x] |
-| 13 | swarm.js — Hyperswarm peer lifecycle and Corestore replication | backend-dev | 12, 11 | [ ] |
+| 13 | swarm.js — Hyperswarm peer lifecycle and Corestore replication | backend-dev | 12, 11 | [x] |
 | 14 | Tests for remote-helper.js | tdd-test-writer | 03 | [x] |
 | 15 | remote-helper.js — stdin/stdout git remote helper protocol | backend-dev | 14, 11, 13 | [ ] |
 | 16 | bin/git-remote-pear — entry point | backend-dev | 15 | [ ] |
