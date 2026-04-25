@@ -20,8 +20,8 @@
 | 14 | Tests for remote-helper.js | tdd-test-writer | 03 | [x] |
 | 15 | remote-helper.js — stdin/stdout git remote helper protocol | backend-dev | 14, 11, 13 | [ ] |
 | 16 | bin/git-remote-pear — entry point | backend-dev | 15 | [ ] |
-| 17 | Tests for pear-git init | tdd-test-writer | 11 | [ ] |
-| 18 | pear-git init subcommand | backend-dev | 17, 13 | [ ] |
+| 17 | Tests for pear-git init | tdd-test-writer | 11 | [x] |
+| 18 | pear-git init subcommand | backend-dev | 17, 13 | [x] |
 | 19 | Tests for pear-git invite and revoke | tdd-test-writer | 11 | [ ] |
 | 20 | pear-git invite and revoke subcommands | backend-dev | 19, 18, 09 | [ ] |
 | 21 | Tests for pear-git seed | tdd-test-writer | 13 | [ ] |
