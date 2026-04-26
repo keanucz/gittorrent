@@ -56,6 +56,7 @@ import { loadIdentity } from '../lib/identity.js'
 import { openRepo } from '../lib/autobase-repo.js'
 import { createSwarm, connectToSocket, listRepoSockets } from '../lib/swarm.js'
 import { createRemoteHelper } from '../lib/remote-helper.js'
+import { listRepoRpcSockets, connectRepoRpc, createRpcRepoProxy } from '../lib/repo-rpc.js'
 
 // Increased default from 10s -> 45s: cross-WAN Autobase replication over a
 // WebSocket relay has higher latency than direct UDP DHT, and the first-clone
@@ -164,6 +165,27 @@ async function main () {
   progress('Loading identity...')
   const identity = await loadIdentity(dataDir)
 
+  // When the local corestore was ELOCKED, another process (usually the
+  // seeder) holds the writable Autobase. Try to connect to its repo RPC
+  // socket so pushes route through the writable instance. Without this,
+  // `git push` fails with "Not writable".
+  let rpcClient = null
+  if (helperPath) {
+    const candidates = listRepoRpcSockets(repoKey)
+    for (const sockPath of candidates) {
+      try {
+        rpcClient = await connectRepoRpc(sockPath)
+        progress(`Connected to seeder RPC at ${sockPath}`)
+        break
+      } catch (err) {
+        rootLogger.debug({ sockPath, err: err.message }, 'rpc connect failed')
+      }
+    }
+    if (!rpcClient) {
+      progress('Warning: no seeder RPC found — writes may fail. Is `pear-git seed` running?')
+    }
+  }
+
   progress('Checking for local replication sockets...')
   const socketCleanups = await connectToAnyRepoSocket(corestore, repoKey)
 
@@ -174,12 +196,20 @@ async function main () {
   // before these cores exist, leading to "peer connected but no cores
   // advertised" — exactly the silent-replication symptom we were chasing.
   progress('Opening Autobase repo...')
-  const repo = await openRepo(corestore, identity, { key: repoKey })
+  const localRepo = await openRepo(corestore, identity, { key: repoKey })
   progress('Repo opened, syncing...')
+
+  // If we have an RPC client, wrap it so writes go through the seeder and
+  // reads come from our local corestore (which is kept in sync via the
+  // replication socket below).
+  const repo = rpcClient ? createRpcRepoProxy(rpcClient, localRepo) : localRepo
 
   let swarm = null
   if (socketCleanups.length > 0) {
     progress(`Connected via local socket (${socketCleanups.length} peer(s))`)
+  } else if (rpcClient) {
+    // Seeder handles the swarm — no need to double-join from the helper.
+    progress('Using seeder swarm via RPC')
   } else {
     progress('Joining swarm...')
     swarm = await createSwarm(corestore)
@@ -206,6 +236,9 @@ async function main () {
     }
     if (swarm) {
       try { await swarm.destroy() } catch { /* already destroyed */ }
+    }
+    if (rpcClient) {
+      try { await rpcClient.close() } catch {}
     }
     try { await corestore.close() } catch { /* already closed */ }
     if (helperPath) {
