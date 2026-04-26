@@ -16,12 +16,22 @@ const keyStr = url.replace(/^pear:\/\//, '')
 const repoKey = Buffer.from(bs58.decode(keyStr))
 const topic = createHash('sha256').update(repoKey).digest()
 
+let bootstrap
+const bootstrapEnv = process.env.PEAR_GIT_BOOTSTRAP_NODES
+if (bootstrapEnv) {
+  bootstrap = bootstrapEnv.split(',').map(s => {
+    const [host, port] = s.trim().split(':')
+    return { host, port: Number(port) }
+  })
+}
+
 console.log('=== pear-git network diagnostic ===')
 console.log('repo key:', keyStr)
 console.log('topic:   ', topic.toString('hex'))
+if (bootstrap) console.log('bootstrap:', bootstrapEnv)
 console.log('')
 
-const swarm = new Hyperswarm()
+const swarm = new Hyperswarm({ bootstrap })
 
 swarm.on('connection', (conn, peerInfo) => {
   console.log('[CONNECTED] peer:', conn.remotePublicKey?.toString('hex')?.slice(0, 16) + '...')
