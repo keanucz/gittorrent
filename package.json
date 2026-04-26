@@ -12,9 +12,9 @@
     "install:bins": "bash scripts/install.sh"
   },
   "bin": {
-    "git-remote-gittorrent": "./bin/git-remote-gittorrent",
-    "gittorrent": "./bin/gittorrent",
-    "gittorrent-diag": "./bin/gittorrent-diag"
+    "git-remote-gittorrent": "bin/git-remote-gittorrent",
+    "gittorrent": "bin/gittorrent",
+    "gittorrent-diag": "bin/gittorrent-diag"
   },
   "dependencies": {
     "@hyperswarm/dht-relay": "^0.4.3",
