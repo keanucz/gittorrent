@@ -1,0 +1,30 @@
+# Development files
+test/
+examples/
+demo11/
+architecture/
+scripts/
+tasks/
+scratch/
+.claude
+.claude-octopus/
+eslint.config.js
+.env*
+*.pem
+*.key
+secrets/
+clone.log
+tmp-test/
+
+# Git files
+.git/
+.gitignore
+
+interface/
+node_modules/
+**/node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

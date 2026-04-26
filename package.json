@@ -1,5 +1,5 @@
 {
-  "name": "gittorrent",
+  "name": "@nathanj9/gittorrent",
   "version": "0.1.0",
   "type": "module",
   "engines": {
@@ -13,7 +13,8 @@
   },
   "bin": {
     "git-remote-gittorrent": "./bin/git-remote-gittorrent",
-    "gittorrent": "./bin/gittorrent"
+    "gittorrent": "./bin/gittorrent",
+    "gittorrent-diag": "./bin/gittorrent-diag"
   },
   "dependencies": {
     "@hyperswarm/dht-relay": "^0.4.3",
