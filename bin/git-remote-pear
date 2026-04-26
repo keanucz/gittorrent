@@ -8,6 +8,23 @@ process.stdout.on('error', (err) => {
   throw err
 })
 
+// Sync-flushed stdout wrapper. On Windows, node's default stdout on pipes is
+// block-buffered — git-remote-helper protocol is line-oriented and git will
+// deadlock waiting for the capabilities reply if we don't flush each line
+// immediately. Using fs.writeSync bypasses node's userspace buffer entirely
+// and hands bytes to the OS write syscall per line.
+import { writeSync } from 'node:fs'
+const stdoutSync = {
+  write (chunk) {
+    const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk))
+    try { writeSync(1, buf) } catch (err) {
+      if (err.code === 'EPIPE') process.exit(0)
+      throw err
+    }
+    return true
+  }
+}
+
 import pino from 'pino'
 import bs58 from 'bs58'
 import path from 'node:path'
@@ -173,11 +190,12 @@ async function main () {
   try {
     const exitCode = await createRemoteHelper({
       input: process.stdin,
-      output: process.stdout,
+      output: stdoutSync,
       repo,
       objectStore,
       swarm,
       repoKey,
+      corestore,
       workingClonePath: resolveWorkTree(),
       identity,
       readyTimeoutMs: READY_TIMEOUT_MS
