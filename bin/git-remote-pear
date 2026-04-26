@@ -109,26 +109,29 @@ async function main () {
   const base58RepoKey = bs58.encode(repoKey)
   const storePath = path.join(dataDir, 'stores', base58RepoKey)
 
+  const progress = (msg) => process.stderr.write(`pear-git: ${msg}\n`)
+
   rootLogger.debug({ remoteName, base58RepoKey, storePath }, 'starting remote helper')
+  progress(`Connecting to ${base58RepoKey.slice(0, 8)}...`)
 
   const { corestore, helperPath } = await openCorestoreWithFallback(storePath)
 
   const identity = await loadIdentity(dataDir)
 
-  // Prefer direct sockets exposed by cooperating in-process peers. This
-  // bypasses the DHT and works even when the parent test harness uses a
-  // private ephemeral bootstrap unreachable from sibling processes.
   const socketCleanups = await connectToAnyRepoSocket(corestore, repoKey)
 
   let swarm = null
-  if (socketCleanups.length === 0) {
+  if (socketCleanups.length > 0) {
+    progress(`Connected via local socket (${socketCleanups.length} peer(s))`)
+  } else {
+    progress('Joining swarm...')
     swarm = await createSwarm(corestore)
     await swarm.join(repoKey)
+    progress('Announced to DHT, discovering peers...')
   }
 
-  // Open the repo AFTER replication is wired up so base.update() can pick up
-  // remote input cores on the first call.
   const repo = await openRepo(corestore, identity, { key: repoKey })
+  progress('Repo opened, syncing...')
 
   // Build an object store backed by the Autobase objectsView so that objects
   // seeded during `init` (via repo.putObject) are visible to the fetch path.
@@ -168,6 +171,11 @@ async function main () {
       identity,
       readyTimeoutMs: READY_TIMEOUT_MS
     })
+
+    const lingerMs = Number(process.env.PEAR_GIT_LINGER_MS ?? 3000)
+    if (swarm && lingerMs > 0) {
+      await new Promise(resolve => setTimeout(resolve, lingerMs))
+    }
 
     await cleanup()
     process.exit(exitCode || 0)

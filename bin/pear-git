@@ -43,11 +43,12 @@ QUICK START
   1. cd my-project && git init && git add . && git commit -m "init"
   2. pear-git init                         # creates pear:// URL
   3. git push origin master                # pushes to the swarm
-  4. # collaborator: git clone pear://...  # clones from the swarm
-  5. pear-git whoami                       # show your key
-  6. pear-git invite <their-pubkey>        # give them write access
-  7. pear-git secrets add .env             # encrypt .env for the team
-  8. # collaborator: pear-git secrets get .env --output .env
+  4. pear-git seed -d                      # seed in background
+  5. # collaborator: git clone pear://...  # clones from the swarm
+  6. pear-git whoami                       # show your key
+  7. pear-git invite <their-pubkey>        # give them write access
+  8. pear-git secrets add .env             # encrypt .env for the team
+  9. # collaborator: pear-git secrets get .env --output .env
 
 ENVIRONMENT
   PEAR_GIT_DATA_DIR        Data directory (default: ~/.pear-git)
@@ -129,15 +130,16 @@ EXAMPLE
 const SEED_HELP = `pear-git seed — replicate repos in the background
 
 USAGE
-  pear-git seed [pear://url ...] [--human]
+  pear-git seed [pear://url ...] [--human] [--daemon|-d]
 
 If no URLs are given, seeds the current repo (reads origin from git).
 
 OPTIONS
   --human     Human-readable event output instead of JSON
+  --daemon -d Run in background (detached process)
 
 Keeps the process running, replicating the given repos to any
-connecting peers. Use this on a server or VPS for always-on seeding.
+connecting peers. Use --daemon to background it automatically.
 `
 
 const WHOAMI_HELP = `pear-git whoami — show your public key
@@ -211,7 +213,17 @@ async function dispatch () {
 
     case 'seed':
       if (wantsHelp()) showHelp(SEED_HELP)
-      {
+      if (args.includes('--daemon') || args.includes('-d')) {
+        const { spawn } = await import('node:child_process')
+        const childArgs = args.filter(a => a !== '--daemon' && a !== '-d')
+        const child = spawn(process.execPath, [process.argv[1], 'seed', ...childArgs], {
+          detached: true,
+          stdio: 'ignore',
+          env: process.env
+        })
+        child.unref()
+        process.stderr.write(`Seeder started in background (pid ${child.pid})\n`)
+      } else {
         const m = await import('../lib/commands/seed.js')
         await m.run(args)
       }
