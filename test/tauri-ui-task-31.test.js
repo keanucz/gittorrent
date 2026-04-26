@@ -36,7 +36,7 @@ describe('task 31: tauri command bridge and typed IPC', () => {
     const validationRs = await readFile(join(desktopRoot, 'src-tauri/src/validation.rs'), 'utf-8')
 
     assert.match(validationRs, /ParentDir|\.\./, 'validation should reject path traversal')
-    assert.match(validationRs, /pear:\/\//, 'validation should verify pear:// URL format')
+    assert.match(validationRs, /gittorrent:\/\//, 'validation should verify pear:// URL format')
     assert.match(validationRs, /64/, 'validation should enforce 64-char pubkey length')
     assert.match(validationRs, /is_ascii_hexdigit|hex/, 'validation should enforce hex pubkey characters')
   })

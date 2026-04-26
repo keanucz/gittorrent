@@ -23,11 +23,11 @@ describe('task 33: clone and init repository flows', () => {
     }
 
     const cloneDialog = await readFile(join(desktopRoot, 'src/ui/components/CloneDialog.tsx'), 'utf-8')
-    assert.match(cloneDialog, /pear:\/\//, 'clone dialog should validate pear:// URL')
+    assert.match(cloneDialog, /gittorrent:\/\//, 'clone dialog should validate pear:// URL')
     assert.match(cloneDialog, /onSubmit|cloneRepo/i, 'clone dialog should submit clone operation')
 
     const initDialog = await readFile(join(desktopRoot, 'src/ui/components/InitDialog.tsx'), 'utf-8')
-    assert.match(initDialog, /pear:\/\//, 'init dialog should display returned pear:// URL')
+    assert.match(initDialog, /gittorrent:\/\//, 'init dialog should display returned pear:// URL')
     assert.match(initDialog, /initRepo|onSubmit/i, 'init dialog should submit init operation')
   })
 

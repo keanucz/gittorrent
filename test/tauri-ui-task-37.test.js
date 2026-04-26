@@ -20,15 +20,15 @@ describe('task 37: seeding controls, settings, and hardening', () => {
     assert.match(seedRoute, /seed status|isSeeding|active/i, 'seed route should display current seeding state')
   })
 
-  test('AC2: settings map to PEAR_GIT_* environment values', async () => {
+  test('AC2: settings map to GITTORRENT_* environment values', async () => {
     await fileExists(join(desktopRoot, 'src/ui/routes/Settings.tsx'))
 
     const settingsRoute = await readFile(join(desktopRoot, 'src/ui/routes/Settings.tsx'), 'utf-8')
-    assert.match(settingsRoute, /PEAR_GIT_DATA_DIR/, 'settings should include PEAR_GIT_DATA_DIR')
-    assert.match(settingsRoute, /PEAR_GIT_LOG_LEVEL/, 'settings should include PEAR_GIT_LOG_LEVEL')
-    assert.match(settingsRoute, /PEAR_GIT_BOOTSTRAP_NODES/, 'settings should include PEAR_GIT_BOOTSTRAP_NODES')
-    assert.match(settingsRoute, /PEAR_GIT_SEEDER_KEYS/, 'settings should include PEAR_GIT_SEEDER_KEYS')
-    assert.match(settingsRoute, /PEAR_GIT_CONNECT_TIMEOUT/, 'settings should include PEAR_GIT_CONNECT_TIMEOUT')
+    assert.match(settingsRoute, /GITTORRENT_DATA_DIR/, 'settings should include GITTORRENT_DATA_DIR')
+    assert.match(settingsRoute, /GITTORRENT_LOG_LEVEL/, 'settings should include GITTORRENT_LOG_LEVEL')
+    assert.match(settingsRoute, /GITTORRENT_BOOTSTRAP_NODES/, 'settings should include GITTORRENT_BOOTSTRAP_NODES')
+    assert.match(settingsRoute, /GITTORRENT_SEEDER_KEYS/, 'settings should include GITTORRENT_SEEDER_KEYS')
+    assert.match(settingsRoute, /GITTORRENT_CONNECT_TIMEOUT/, 'settings should include GITTORRENT_CONNECT_TIMEOUT')
   })
 
   test('AC3 and AC4: tauri config hardening and command allowlist audit', async () => {
