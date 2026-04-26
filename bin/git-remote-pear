@@ -40,6 +40,8 @@ import bs58 from 'bs58'
 import path from 'node:path'
 import { homedir } from 'node:os'
 import { mkdir, rm } from 'node:fs/promises'
+import { spawn } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 import Corestore from 'corestore'
 
 // Configure pino immediately to fd 2 (stderr)
@@ -181,8 +183,30 @@ async function main () {
         rootLogger.debug({ sockPath, err: err.message }, 'rpc connect failed')
       }
     }
-    if (!rpcClient) {
-      progress('Warning: no seeder RPC found — writes may fail. Is `pear-git seed` running?')
+    // No socket found — spawn a seeder in the background and wait briefly.
+    if (!rpcClient && process.env.PEAR_GIT_NO_AUTO_SEED !== '1') {
+      progress('No seeder RPC found — auto-starting background seeder...')
+      const pearGitBin = path.join(path.dirname(fileURLToPath(import.meta.url)), 'pear-git')
+      const child = spawn(process.execPath, [pearGitBin, 'seed'], {
+        detached: true,
+        stdio: 'ignore',
+        env: process.env
+      })
+      child.unref()
+      const deadline = Date.now() + 5000
+      while (!rpcClient && Date.now() < deadline) {
+        await new Promise(r => setTimeout(r, 200))
+        for (const sockPath of listRepoRpcSockets(repoKey)) {
+          try {
+            rpcClient = await connectRepoRpc(sockPath)
+            progress(`Connected to auto-started seeder at ${sockPath}`)
+            break
+          } catch {}
+        }
+      }
+      if (!rpcClient) {
+        progress('Warning: seeder did not come up in time — writes may fail.')
+      }
     }
   }
 
