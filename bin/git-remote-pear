@@ -270,6 +270,7 @@ async function main () {
     }
   }
 
+  const sessionState = {}
   try {
     const exitCode = await createRemoteHelper({
       input: process.stdin,
@@ -281,7 +282,8 @@ async function main () {
       corestore,
       workingClonePath: resolveWorkTree(),
       identity,
-      readyTimeoutMs: READY_TIMEOUT_MS
+      readyTimeoutMs: READY_TIMEOUT_MS,
+      sessionState
     })
 
     const lingerMs = Number(process.env.PEAR_GIT_LINGER_MS ?? 3000)
@@ -290,6 +292,27 @@ async function main () {
     }
 
     await cleanup()
+
+    // Auto-seed: if this session actually transferred data and we were
+    // the one holding the local corestore (no RPC proxy), spawn a
+    // detached seeder so the newly-cloned repo stays online for peers.
+    // Skip when the session was RPC-backed (seeder is already running).
+    if ((sessionState.fetched || sessionState.pushed) && !rpcClient && !helperPath
+      && process.env.PEAR_GIT_NO_AUTO_SEED !== '1') {
+      try {
+        const pearGitBin = path.join(path.dirname(fileURLToPath(import.meta.url)), 'pear-git')
+        const seeder = spawn(process.execPath, [pearGitBin, 'seed', url], {
+          detached: true,
+          stdio: 'ignore',
+          env: process.env
+        })
+        seeder.unref()
+        rootLogger.debug({ pid: seeder.pid, url }, 'auto-started background seeder')
+      } catch (err) {
+        rootLogger.warn({ err: err.message }, 'auto-seed spawn failed')
+      }
+    }
+
     process.exit(exitCode || 0)
   } catch (err) {
     rootLogger.error({ err: err.message }, 'remote helper session failed')
