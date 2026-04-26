@@ -1,7 +1,10 @@
-use crate::process::{run_gittorrent, UiError, UiErrorCode};
+use crate::process::{run_git, run_gittorrent, UiError, UiErrorCode};
 use crate::validation::{validate_branch, validate_gittorrent_url, validate_pubkey, validate_repo_path};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::Command as ProcessCommand;
 use std::sync::{Mutex, OnceLock};
 use std::time::Instant;
 
@@ -74,10 +77,72 @@ pub struct SettingsPayload {
 #[derive(Debug)]
 pub(crate) struct RuntimeState {
   seed_sessions: HashMap<String, Instant>,
-  settings: HashMap<String, String>,
+  pub settings: HashMap<String, String>,
 }
 
 static RUNTIME_STATE: OnceLock<Mutex<RuntimeState>> = OnceLock::new();
+
+/// Where we store the list of known repo paths so the UI can re-hydrate them
+/// on startup. ~/.gittorrent/desktop-repos.json.
+fn registry_path() -> PathBuf {
+  let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+  PathBuf::from(home).join(".gittorrent").join("desktop-repos.json")
+}
+
+fn load_registry() -> Vec<RepoSummary> {
+  let path = registry_path();
+  let bytes = match fs::read(&path) {
+    Ok(b) => b,
+    Err(_) => return Vec::new(),
+  };
+  serde_json::from_slice(&bytes).unwrap_or_default()
+}
+
+fn save_registry(repos: &[RepoSummary]) -> Result<(), UiError> {
+  let path = registry_path();
+  if let Some(parent) = path.parent() {
+    fs::create_dir_all(parent).map_err(|e| {
+      UiError::with_details(UiErrorCode::Internal, "Failed to create registry dir", e.to_string())
+    })?;
+  }
+  let json = serde_json::to_vec_pretty(repos).map_err(|e| {
+    UiError::with_details(UiErrorCode::Internal, "Failed to serialise registry", e.to_string())
+  })?;
+  fs::write(&path, json).map_err(|e| {
+    UiError::with_details(UiErrorCode::Internal, "Failed to write registry", e.to_string())
+  })?;
+  Ok(())
+}
+
+fn register_repo(path: &str, url: Option<&str>) -> Result<(), UiError> {
+  let mut list = load_registry();
+  if let Some(existing) = list.iter_mut().find(|r| r.path == path) {
+    if let Some(u) = url {
+      existing.url = Some(u.to_string());
+    }
+  } else {
+    list.push(RepoSummary {
+      path: path.to_string(),
+      url: url.map(String::from),
+    });
+  }
+  save_registry(&list)
+}
+
+/// Read `origin` URL from a git repo. Returns None if not set or not a
+/// gittorrent:// URL.
+fn read_origin_url(path: &Path) -> Option<String> {
+  let out = ProcessCommand::new("git")
+    .args(["remote", "get-url", "origin"])
+    .current_dir(path)
+    .output()
+    .ok()?;
+  if !out.status.success() {
+    return None;
+  }
+  let url = String::from_utf8_lossy(&out.stdout).trim().to_string();
+  if url.starts_with("gittorrent://") { Some(url) } else { None }
+}
 
 pub(crate) fn runtime_state() -> &'static Mutex<RuntimeState> {
   RUNTIME_STATE.get_or_init(|| {
@@ -136,7 +201,17 @@ pub fn health_check() -> &'static str {
 
 #[tauri::command]
 pub fn repo_list() -> Result<Vec<RepoSummary>, UiError> {
-  Ok(Vec::new())
+  let mut list = load_registry();
+  // Refresh the stored URL by reading origin again — cheap and keeps the UI
+  // in sync when the user runs commands outside the app.
+  for repo in list.iter_mut() {
+    if Path::new(&repo.path).exists() {
+      if let Some(url) = read_origin_url(Path::new(&repo.path)) {
+        repo.url = Some(url);
+      }
+    }
+  }
+  Ok(list)
 }
 
 #[tauri::command]
@@ -196,6 +271,21 @@ pub fn repo_status(path: String) -> Result<RepoStatusResponse, UiError> {
 #[tauri::command]
 pub fn repo_init(path: String) -> Result<RepoInitResponse, UiError> {
   let repo_path = validate_repo_path(&path)?;
+
+  // If the target isn't a git repo yet, bootstrap one with an empty initial
+  // commit so `gittorrent init` has something to point at.
+  let dot_git = repo_path.join(".git");
+  if !dot_git.exists() {
+    fs::create_dir_all(&repo_path).map_err(|e| {
+      UiError::with_details(UiErrorCode::Internal, "Failed to create repo dir", e.to_string())
+    })?;
+    run_git(&["init", "-b", "master"], Some(repo_path.as_path()))?;
+    // Best-effort user config — honors existing global config if present.
+    let _ = run_git(&["config", "user.email", "demo@gittorrent.local"], Some(repo_path.as_path()));
+    let _ = run_git(&["config", "user.name", "Gittorrent Demo"], Some(repo_path.as_path()));
+    run_git(&["commit", "--allow-empty", "-m", "initial commit"], Some(repo_path.as_path()))?;
+  }
+
   let output = run_gittorrent(&["init"], Some(repo_path.as_path()))?;
 
   let url = output
@@ -205,6 +295,8 @@ pub fn repo_init(path: String) -> Result<RepoInitResponse, UiError> {
     .find(|line| line.starts_with("gittorrent://"))
     .ok_or_else(|| UiError::new(UiErrorCode::CommandFailed, "Missing gittorrent:// URL from init output"))?
     .to_string();
+
+  register_repo(&path, Some(&url))?;
 
   Ok(RepoInitResponse {
     path,
@@ -217,7 +309,11 @@ pub fn repo_clone(url: String, path: String) -> Result<RepoCloneResponse, UiErro
   let clean_url = validate_gittorrent_url(&url)?;
   let repo_path = validate_repo_path(&path)?;
 
-  run_gittorrent(&["clone", clean_url.as_str(), repo_path.to_string_lossy().as_ref()], None)?;
+  // Cloning happens via `git clone gittorrent://...` — the git-remote-gittorrent
+  // helper handles the actual peer discovery + data transfer.
+  run_git(&["clone", clean_url.as_str(), repo_path.to_string_lossy().as_ref()], None)?;
+
+  register_repo(&path, Some(&clean_url))?;
 
   Ok(RepoCloneResponse {
     path,
@@ -228,12 +324,16 @@ pub fn repo_clone(url: String, path: String) -> Result<RepoCloneResponse, UiErro
 #[tauri::command]
 pub fn repo_pull(path: String) -> Result<SyncSummary, UiError> {
   let repo_path = validate_repo_path(&path)?;
-  let output = run_gittorrent(&["pull"], Some(repo_path.as_path()))?;
+  // `git pull` drives git-remote-gittorrent for the wire protocol and merges
+  // changes into the working tree. Autobase ref sync + object fetch happens
+  // inside the helper subprocess.
+  let output = run_git(&["pull", "--rebase", "origin"], Some(repo_path.as_path()))?;
 
-  let message = if output.stdout.trim().is_empty() {
+  let combined = format!("{}{}", output.stdout, output.stderr);
+  let message = if combined.trim().is_empty() {
     "Pull completed".to_string()
   } else {
-    output.stdout.trim().to_string()
+    combined.trim().to_string()
   };
 
   Ok(SyncSummary { ok: true, message })
@@ -243,7 +343,7 @@ pub fn repo_pull(path: String) -> Result<SyncSummary, UiError> {
 pub fn repo_push(path: String, branch: String) -> Result<SyncSummary, UiError> {
   let repo_path = validate_repo_path(&path)?;
   let clean_branch = validate_branch(&branch)?;
-  let output = match run_gittorrent(&["push", "origin", clean_branch.as_str()], Some(repo_path.as_path())) {
+  let output = match run_git(&["push", "origin", clean_branch.as_str()], Some(repo_path.as_path())) {
     Ok(value) => value,
     Err(error) => {
       let details = error.details.clone().unwrap_or_default().to_lowercase();
@@ -259,10 +359,11 @@ pub fn repo_push(path: String, branch: String) -> Result<SyncSummary, UiError> {
     }
   };
 
-  let message = if output.stdout.trim().is_empty() {
+  let combined = format!("{}{}", output.stdout, output.stderr);
+  let message = if combined.trim().is_empty() {
     format!("Push to {} completed", clean_branch)
   } else {
-    output.stdout.trim().to_string()
+    combined.trim().to_string()
   };
 
   Ok(SyncSummary { ok: true, message })
@@ -272,28 +373,33 @@ pub fn repo_push(path: String, branch: String) -> Result<SyncSummary, UiError> {
 pub fn writer_list(path: String) -> Result<Vec<WriterRecord>, UiError> {
   let repo_path = validate_repo_path(&path)?;
   let output = run_gittorrent(&["status", "--json"], Some(repo_path.as_path()))?;
-
-  let first_line = output
+  let line = output
     .stdout
     .lines()
-    .find(|line| !line.trim().is_empty())
+    .find(|l| !l.trim().is_empty())
     .unwrap_or("{}");
+  let parsed: serde_json::Value = serde_json::from_str(line).unwrap_or(serde_json::json!({}));
 
-  let parsed: serde_json::Value = serde_json::from_str(first_line).unwrap_or_else(|_| serde_json::json!({}));
-  let writers_total = parsed
-    .get("writers")
-    .and_then(|value| value.as_u64())
-    .unwrap_or(0);
-  let indexers = parsed
-    .get("indexers")
-    .and_then(|value| value.as_u64())
-    .unwrap_or(0);
-
-  let mut list = Vec::new();
-  if writers_total == 0 {
-    return Ok(list);
+  // Preferred: explicit writerList from status --json (includes hex keys).
+  if let Some(arr) = parsed.get("writerList").and_then(|v| v.as_array()) {
+    return Ok(arr
+      .iter()
+      .map(|item| {
+        let key = item.get("key").and_then(|v| v.as_str()).unwrap_or("").to_string();
+        let indexer = item.get("indexer").and_then(|v| v.as_bool()).unwrap_or(false);
+        WriterRecord {
+          key: key.clone(),
+          role: if indexer { "Indexer".into() } else { "Writer".into() },
+          indexer,
+        }
+      })
+      .collect());
   }
 
+  // Fallback: counts-only render for older CLI versions.
+  let writers_total = parsed.get("writers").and_then(|v| v.as_u64()).unwrap_or(0);
+  let indexers = parsed.get("indexers").and_then(|v| v.as_u64()).unwrap_or(0);
+  let mut list = Vec::new();
   for idx in 0..writers_total {
     let is_indexer = idx < indexers;
     list.push(WriterRecord {
@@ -302,7 +408,6 @@ pub fn writer_list(path: String) -> Result<Vec<WriterRecord>, UiError> {
       indexer: is_indexer,
     });
   }
-
   Ok(list)
 }
 
@@ -345,30 +450,35 @@ pub fn writer_revoke(path: String, pubkey: String) -> Result<SyncSummary, UiErro
 #[tauri::command]
 pub fn secrets_list(path: String) -> Result<Vec<SecretListItem>, UiError> {
   let repo_path = validate_repo_path(&path)?;
+  // `gittorrent secrets list --json` emits a single JSON array of paths.
+  // Key version is a single repo-wide counter, read from `status --json`.
   let output = run_gittorrent(&["secrets", "list", "--json"], Some(repo_path.as_path()))?;
 
   let mut items = Vec::new();
-  for line in output.stdout.lines() {
-    if line.trim().is_empty() {
-      continue;
-    }
+  let line = output
+    .stdout
+    .lines()
+    .find(|l| !l.trim().is_empty())
+    .unwrap_or("[]");
 
-    if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(line) {
-      let path = parsed
-        .get("path")
-        .and_then(|value| value.as_str())
-        .unwrap_or_default()
-        .to_string();
-      let key_version = parsed
-        .get("keyVersion")
-        .or_else(|| parsed.get("key_version"))
-        .and_then(|value| value.as_u64())
-        .unwrap_or(0) as u32;
+  let paths: Vec<String> = serde_json::from_str(line).unwrap_or_default();
 
-      if !path.is_empty() {
-        items.push(SecretListItem { path, key_version });
-      }
-    }
+  // Pull key version from status — best effort.
+  let key_version = run_gittorrent(&["status", "--json"], Some(repo_path.as_path()))
+    .ok()
+    .and_then(|out| {
+      let first = out.stdout.lines().find(|l| !l.trim().is_empty())?.to_string();
+      let parsed: serde_json::Value = serde_json::from_str(&first).ok()?;
+      parsed
+        .get("secrets")
+        .and_then(|s| s.get("keyVersion"))
+        .and_then(|v| v.as_u64())
+        .map(|v| v as u32)
+    })
+    .unwrap_or(0);
+
+  for p in paths {
+    items.push(SecretListItem { path: p, key_version });
   }
 
   Ok(items)
@@ -448,25 +558,71 @@ pub fn secrets_rotate(path: String) -> Result<SyncSummary, UiError> {
   Ok(SyncSummary { ok: true, message })
 }
 
+/// Look up the URL for a repo path via origin remote.  Required for seeder
+/// process management so we can match seed processes to repos.
+fn repo_url_for(path: &Path) -> Option<String> {
+  read_origin_url(path)
+}
+
+/// Find seeder PIDs that are serving `url`.  We use pgrep since the seeder
+/// is spawned as `node gittorrent seed <url>` (detached daemon mode).
+fn find_seeder_pids(url: &str) -> Vec<u32> {
+  let out = ProcessCommand::new("pgrep")
+    .args(["-f", &format!("gittorrent seed.*{}", url)])
+    .output();
+  match out {
+    Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout)
+      .lines()
+      .filter_map(|l| l.trim().parse::<u32>().ok())
+      .collect(),
+    _ => Vec::new(),
+  }
+}
+
 #[tauri::command]
 pub fn seed_start(path: String) -> Result<SyncSummary, UiError> {
   let repo_path = validate_repo_path(&path)?;
-  let _ = run_gittorrent(&["seed", "start"], Some(repo_path.as_path()));
+  let url = repo_url_for(repo_path.as_path())
+    .ok_or_else(|| UiError::new(UiErrorCode::InvalidInput, "Repo has no gittorrent:// origin set"))?;
+
+  // If a seeder is already running for this repo we're done.
+  if !find_seeder_pids(&url).is_empty() {
+    let state = runtime_state();
+    let mut guard = state.lock().map_err(|_| UiError::new(UiErrorCode::Internal, "Runtime state lock failed"))?;
+    guard.seed_sessions.insert(path.clone(), Instant::now());
+    return Ok(SyncSummary { ok: true, message: "Seeder already running".into() });
+  }
+
+  // Spawn a detached seeder. Detach via double-fork equivalent: use
+  // setsid + stdio to /dev/null.
+  let mut cmd = ProcessCommand::new("gittorrent");
+  cmd.args(["seed", "-d", url.as_str()]);
+  cmd.current_dir(repo_path.as_path());
+  cmd.stdin(std::process::Stdio::null());
+  cmd.stdout(std::process::Stdio::null());
+  cmd.stderr(std::process::Stdio::null());
+
+  cmd.spawn().map_err(|e| {
+    UiError::with_details(UiErrorCode::Internal, "Failed to spawn seeder", e.to_string())
+  })?;
 
   let state = runtime_state();
   let mut guard = state.lock().map_err(|_| UiError::new(UiErrorCode::Internal, "Runtime state lock failed"))?;
   guard.seed_sessions.insert(path.clone(), Instant::now());
 
-  Ok(SyncSummary {
-    ok: true,
-    message: "Seed start requested".to_string(),
-  })
+  Ok(SyncSummary { ok: true, message: format!("Seeder started for {}", url) })
 }
 
 #[tauri::command]
 pub fn seed_stop(path: String) -> Result<SyncSummary, UiError> {
   let repo_path = validate_repo_path(&path)?;
-  let _ = run_gittorrent(&["seed", "stop"], Some(repo_path.as_path()));
+  let url = repo_url_for(repo_path.as_path())
+    .ok_or_else(|| UiError::new(UiErrorCode::InvalidInput, "Repo has no gittorrent:// origin set"))?;
+
+  let pids = find_seeder_pids(&url);
+  for pid in &pids {
+    let _ = ProcessCommand::new("kill").arg(pid.to_string()).status();
+  }
 
   let state = runtime_state();
   let mut guard = state.lock().map_err(|_| UiError::new(UiErrorCode::Internal, "Runtime state lock failed"))?;
@@ -474,27 +630,27 @@ pub fn seed_stop(path: String) -> Result<SyncSummary, UiError> {
 
   Ok(SyncSummary {
     ok: true,
-    message: "Seed stop requested".to_string(),
+    message: format!("Stopped {} seeder(s)", pids.len()),
   })
 }
 
 #[tauri::command]
 pub fn seed_status(path: String) -> Result<SeedStatusResponse, UiError> {
-  let _ = validate_repo_path(&path)?;
+  let repo_path = validate_repo_path(&path)?;
+  let url = repo_url_for(repo_path.as_path());
+  let pids = url.as_deref().map(find_seeder_pids).unwrap_or_default();
+  let active = !pids.is_empty();
+
   let state = runtime_state();
   let guard = state.lock().map_err(|_| UiError::new(UiErrorCode::Internal, "Runtime state lock failed"))?;
 
-  if let Some(started) = guard.seed_sessions.get(path.as_str()) {
-    return Ok(SeedStatusResponse {
-      active: true,
-      session_seconds: started.elapsed().as_secs(),
-    });
-  }
+  let session_seconds = guard
+    .seed_sessions
+    .get(path.as_str())
+    .map(|started| started.elapsed().as_secs())
+    .unwrap_or(0);
 
-  Ok(SeedStatusResponse {
-    active: false,
-    session_seconds: 0,
-  })
+  Ok(SeedStatusResponse { active, session_seconds })
 }
 
 #[tauri::command]

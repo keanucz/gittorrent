@@ -26,7 +26,5 @@
   "bundle": {
     "active": true,
     "targets": "all"
-  },
-  "permissions": []
-  
+  }
 }

@@ -1,0 +1,132 @@
+"$schema" = "../gen/schemas/permission.json"
+
+[default]
+description = "Default permissions for the gittorrent desktop app"
+permissions = [
+  "allow-health-check",
+  "allow-repo-list",
+  "allow-repo-status",
+  "allow-repo-init",
+  "allow-repo-clone",
+  "allow-repo-pull",
+  "allow-repo-push",
+  "allow-writer-list",
+  "allow-writer-invite",
+  "allow-writer-revoke",
+  "allow-secrets-list",
+  "allow-secrets-add",
+  "allow-secrets-get",
+  "allow-secrets-remove",
+  "allow-secrets-rotate",
+  "allow-seed-start",
+  "allow-seed-stop",
+  "allow-seed-status",
+  "allow-settings-get",
+  "allow-settings-set",
+  "allow-set-log-level",
+]
+
+[[permission]]
+identifier = "allow-health-check"
+description = "Allow the frontend to call health_check"
+commands.allow = ["health_check"]
+
+[[permission]]
+identifier = "allow-repo-list"
+description = "Allow the frontend to call repo_list"
+commands.allow = ["repo_list"]
+
+[[permission]]
+identifier = "allow-repo-status"
+description = "Allow the frontend to call repo_status"
+commands.allow = ["repo_status"]
+
+[[permission]]
+identifier = "allow-repo-init"
+description = "Allow the frontend to call repo_init"
+commands.allow = ["repo_init"]
+
+[[permission]]
+identifier = "allow-repo-clone"
+description = "Allow the frontend to call repo_clone"
+commands.allow = ["repo_clone"]
+
+[[permission]]
+identifier = "allow-repo-pull"
+description = "Allow the frontend to call repo_pull"
+commands.allow = ["repo_pull"]
+
+[[permission]]
+identifier = "allow-repo-push"
+description = "Allow the frontend to call repo_push"
+commands.allow = ["repo_push"]
+
+[[permission]]
+identifier = "allow-writer-list"
+description = "Allow the frontend to call writer_list"
+commands.allow = ["writer_list"]
+
+[[permission]]
+identifier = "allow-writer-invite"
+description = "Allow the frontend to call writer_invite"
+commands.allow = ["writer_invite"]
+
+[[permission]]
+identifier = "allow-writer-revoke"
+description = "Allow the frontend to call writer_revoke"
+commands.allow = ["writer_revoke"]
+
+[[permission]]
+identifier = "allow-secrets-list"
+description = "Allow the frontend to call secrets_list"
+commands.allow = ["secrets_list"]
+
+[[permission]]
+identifier = "allow-secrets-add"
+description = "Allow the frontend to call secrets_add"
+commands.allow = ["secrets_add"]
+
+[[permission]]
+identifier = "allow-secrets-get"
+description = "Allow the frontend to call secrets_get"
+commands.allow = ["secrets_get"]
+
+[[permission]]
+identifier = "allow-secrets-remove"
+description = "Allow the frontend to call secrets_remove"
+commands.allow = ["secrets_remove"]
+
+[[permission]]
+identifier = "allow-secrets-rotate"
+description = "Allow the frontend to call secrets_rotate"
+commands.allow = ["secrets_rotate"]
+
+[[permission]]
+identifier = "allow-seed-start"
+description = "Allow the frontend to call seed_start"
+commands.allow = ["seed_start"]
+
+[[permission]]
+identifier = "allow-seed-stop"
+description = "Allow the frontend to call seed_stop"
+commands.allow = ["seed_stop"]
+
+[[permission]]
+identifier = "allow-seed-status"
+description = "Allow the frontend to call seed_status"
+commands.allow = ["seed_status"]
+
+[[permission]]
+identifier = "allow-settings-get"
+description = "Allow the frontend to call settings_get"
+commands.allow = ["settings_get"]
+
+[[permission]]
+identifier = "allow-settings-set"
+description = "Allow the frontend to call settings_set"
+commands.allow = ["settings_set"]
+
+[[permission]]
+identifier = "allow-set-log-level"
+description = "Allow the frontend to call set_log_level"
+commands.allow = ["set_log_level"]

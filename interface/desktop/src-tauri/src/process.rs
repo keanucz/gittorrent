@@ -52,26 +52,30 @@ pub fn map_exit_code(code: Option<i32>) -> UiErrorCode {
   }
 }
 
-pub fn run_gittorrent(args: &[&str], cwd: Option<&Path>) -> Result<CommandOutput, UiError> {
-  let mut command = Command::new("gittorrent");
+fn apply_runtime_env(command: &mut Command) {
+  if let Ok(state) = crate::commands::runtime_state().lock() {
+    for (key, value) in &state.settings {
+      if !value.is_empty() {
+        command.env(key, value);
+      }
+    }
+  }
+}
+
+fn run_with_binary(binary: &str, label: &str, args: &[&str], cwd: Option<&Path>) -> Result<CommandOutput, UiError> {
+  let mut command = Command::new(binary);
   command.args(args);
 
   if let Some(path) = cwd {
     command.current_dir(path);
   }
 
-  // Pass environment variables from runtime state
-  if let Some(state) = crate::commands::runtime_state().lock().ok() {
-    for (key, value) in &state.settings {
-      command.env(key, value);
-    }
-  }
-
+  apply_runtime_env(&mut command);
 
   let output = command.output().map_err(|err| {
     UiError::with_details(
       UiErrorCode::Internal,
-      "Unable to execute gittorrent command",
+      format!("Unable to execute {} command", label),
       err.to_string(),
     )
   })?;
@@ -91,9 +95,17 @@ pub fn run_gittorrent(args: &[&str], cwd: Option<&Path>) -> Result<CommandOutput
 
   Err(UiError::with_details(
     map_exit_code(output.status.code()),
-    "gittorrent command failed",
+    format!("{} command failed", label),
     details,
   ))
+}
+
+pub fn run_gittorrent(args: &[&str], cwd: Option<&Path>) -> Result<CommandOutput, UiError> {
+  run_with_binary("gittorrent", "gittorrent", args, cwd)
+}
+
+pub fn run_git(args: &[&str], cwd: Option<&Path>) -> Result<CommandOutput, UiError> {
+  run_with_binary("git", "git", args, cwd)
 }
 
 #[cfg(test)]
