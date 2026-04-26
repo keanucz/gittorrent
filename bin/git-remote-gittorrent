@@ -17,11 +17,11 @@ import { writeSync } from 'node:fs'
 
 // Surface silent async failures so Windows hangs become diagnosable.
 process.on('uncaughtException', (err) => {
-  try { writeSync(2, Buffer.from(`pear-git-fatal: uncaughtException: ${err.stack || err.message}\n`)) } catch {}
+  try { writeSync(2, Buffer.from(`gittorrent-fatal: uncaughtException: ${err.stack || err.message}\n`)) } catch {}
   process.exit(1)
 })
 process.on('unhandledRejection', (reason) => {
-  try { writeSync(2, Buffer.from(`pear-git-fatal: unhandledRejection: ${reason?.stack || reason}\n`)) } catch {}
+  try { writeSync(2, Buffer.from(`gittorrent-fatal: unhandledRejection: ${reason?.stack || reason}\n`)) } catch {}
   process.exit(1)
 })
 const stdoutSync = {
@@ -47,7 +47,7 @@ import Corestore from 'corestore'
 // Configure pino immediately to fd 2 (stderr)
 const rootLogger = pino(
   {
-    level: process.env.PEAR_GIT_LOG_LEVEL || 'warn',
+    level: process.env.GITTORRENT_LOG_LEVEL || 'warn',
     redact: ['identity.secretKey', 'secretKey', '*.secretKey', '[*].secretKey'],
     base: { pid: process.pid }
   },
@@ -65,7 +65,7 @@ import { listRepoRpcSockets, connectRepoRpc, createRpcRepoProxy } from '../lib/r
 // case has to pull the primary bootstrap core + system view + refs view before
 // any refs become visible. 10s was enough locally but repeatedly timed out on
 // real remote peers. Users can still override via env for CI or LAN tests.
-const READY_TIMEOUT_MS = Number(process.env.PEAR_GIT_HELPER_READY_TIMEOUT ?? 45000)
+const READY_TIMEOUT_MS = Number(process.env.GITTORRENT_HELPER_READY_TIMEOUT ?? 45000)
 
 /**
  * Opens a Corestore at `storePath`. When the directory is already locked by
@@ -75,7 +75,7 @@ const READY_TIMEOUT_MS = Number(process.env.PEAR_GIT_HELPER_READY_TIMEOUT ?? 450
  * (e.g. e2e tests) takes the fallback path.
  */
 function diag (msg) {
-  try { writeSync(2, Buffer.from(`pear-git-diag: ${msg}\n`)) } catch {}
+  try { writeSync(2, Buffer.from(`gittorrent-diag: ${msg}\n`)) } catch {}
 }
 
 async function openCorestoreWithFallback (storePath) {
@@ -134,26 +134,26 @@ async function main () {
   const remoteName = process.argv[2]
   const url = process.argv[3]
 
-  if (!url || !url.startsWith('pear://')) {
-    process.stderr.write('git-remote-pear: error: expected pear:// URL\n')
+  if (!url || !url.startsWith('gittorrent://')) {
+    process.stderr.write('git-remote-gittorrent: error: expected gittorrent:// URL\n')
     process.exit(1)
   }
 
-  const encoded = url.slice('pear://'.length)
+  const encoded = url.slice('gittorrent://'.length)
   let repoKey
   try {
     repoKey = Buffer.from(bs58.decode(encoded))
   } catch {
-    process.stderr.write('git-remote-pear: error: invalid pear:// URL (bad base58)\n')
+    process.stderr.write('git-remote-gittorrent: error: invalid gittorrent:// URL (bad base58)\n')
     process.exit(1)
   }
 
-  const dataDir = process.env.PEAR_GIT_DATA_DIR || path.join(homedir(), '.pear-git')
+  const dataDir = process.env.GITTORRENT_DATA_DIR || path.join(homedir(), '.gittorrent')
   const base58RepoKey = bs58.encode(repoKey)
   const storePath = path.join(dataDir, 'stores', base58RepoKey)
 
   const progress = (msg) => {
-    const buf = Buffer.from(`pear-git: ${msg}\n`)
+    const buf = Buffer.from(`gittorrent: ${msg}\n`)
     try { writeSync(2, buf) } catch { process.stderr.write(buf) }
   }
 
@@ -184,10 +184,10 @@ async function main () {
       }
     }
     // No socket found — spawn a seeder in the background and wait briefly.
-    if (!rpcClient && process.env.PEAR_GIT_NO_AUTO_SEED !== '1') {
+    if (!rpcClient && process.env.GITTORRENT_NO_AUTO_SEED !== '1') {
       progress('No seeder RPC found — auto-starting background seeder...')
-      const pearGitBin = path.join(path.dirname(fileURLToPath(import.meta.url)), 'pear-git')
-      const child = spawn(process.execPath, [pearGitBin, 'seed'], {
+      const gittorrentBin = path.join(path.dirname(fileURLToPath(import.meta.url)), 'gittorrent')
+      const child = spawn(process.execPath, [gittorrentBin, 'seed'], {
         detached: true,
         stdio: 'ignore',
         env: process.env
@@ -286,7 +286,7 @@ async function main () {
       sessionState
     })
 
-    const lingerMs = Number(process.env.PEAR_GIT_LINGER_MS ?? 3000)
+    const lingerMs = Number(process.env.GITTORRENT_LINGER_MS ?? 3000)
     if (swarm && lingerMs > 0) {
       await new Promise(resolve => setTimeout(resolve, lingerMs))
     }
@@ -298,10 +298,10 @@ async function main () {
     // detached seeder so the newly-cloned repo stays online for peers.
     // Skip when the session was RPC-backed (seeder is already running).
     if ((sessionState.fetched || sessionState.pushed) && !rpcClient && !helperPath
-      && process.env.PEAR_GIT_NO_AUTO_SEED !== '1') {
+      && process.env.GITTORRENT_NO_AUTO_SEED !== '1') {
       try {
-        const pearGitBin = path.join(path.dirname(fileURLToPath(import.meta.url)), 'pear-git')
-        const seeder = spawn(process.execPath, [pearGitBin, 'seed', url], {
+        const gittorrentBin = path.join(path.dirname(fileURLToPath(import.meta.url)), 'gittorrent')
+        const seeder = spawn(process.execPath, [gittorrentBin, 'seed', url], {
           detached: true,
           stdio: 'ignore',
           env: process.env
@@ -316,13 +316,13 @@ async function main () {
     process.exit(exitCode || 0)
   } catch (err) {
     rootLogger.error({ err: err.message }, 'remote helper session failed')
-    process.stderr.write(`git-remote-pear: error: ${err.message}\n`)
+    process.stderr.write(`git-remote-gittorrent: error: ${err.message}\n`)
     await cleanup()
     process.exit(1)
   }
 }
 
 main().catch(err => {
-  process.stderr.write(`git-remote-pear: error: ${err.message}\n`)
+  process.stderr.write(`git-remote-gittorrent: error: ${err.message}\n`)
   process.exit(1)
 })

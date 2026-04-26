@@ -13,10 +13,10 @@ run "cd '$DEMO_DIR' && git pull origin master --rebase || true"
 
 pause
 
-run "cd '$DEMO_DIR' && pear-git secrets list"
+run "cd '$DEMO_DIR' && gittorrent secrets list"
 
 pause
 
-run "cd '$DEMO_DIR' && pear-git secrets get alice-shared.env"
+run "cd '$DEMO_DIR' && gittorrent secrets get alice-shared.env"
 
 ok "end-to-end secrets flow demonstrated"

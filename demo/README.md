@@ -1,25 +1,25 @@
-# HackUPC pear-git demo
+# HackUPC gittorrent demo
 
-Shell scripts that walk through the main features of `pear-git` in front of
+Shell scripts that walk through the main features of `gittorrent` in front of
 judges. Each script:
 
 - Prints every command before running it (`$ cmd`) so the audience sees what's
   happening.
 - Pauses between logical steps so the presenter can narrate.
-- Saves state to `./pear-demo.env` so later steps pick up the pear URL, pubkeys,
+- Saves state to `./gittorrent-demo.env` so later steps pick up the gittorrent URL, pubkeys,
   and demo dir from earlier ones.
 
-Disable the pauses with `PEAR_DEMO_NONINTERACTIVE=1` when rehearsing.
+Disable the pauses with `GITTORRENT_DEMO_NONINTERACTIVE=1` when rehearsing.
 
 ## Prerequisites on every machine
 
 ```bash
 # from the gittorrent repo root
 npm install
-npm link          # puts pear-git + git-remote-pear on PATH
+npm link          # puts gittorrent + git-remote-gittorrent on PATH
 ```
 
-Verify with `pear-git --help`.
+Verify with `gittorrent --help`.
 
 ## Three roles
 
@@ -34,11 +34,11 @@ localhost as well as WAN.
 ## Flow
 
 1. **Machine A** — `./demo/a1-init-and-push.sh`
-   - Creates a fresh git repo, runs `pear-git init`, commits, pushes.
+   - Creates a fresh git repo, runs `gittorrent init`, commits, pushes.
    - Auto-spawns a background seeder on exit.
-   - Copy the `pear://...` URL from the output.
+   - Copy the `gittorrent://...` URL from the output.
 
-2. **Machine B** — `PEAR_URL=pear://... ./demo/b1-clone.sh`
+2. **Machine B** — `GITTORRENT_URL=gittorrent://... ./demo/b1-clone.sh`
    - Clones the repo. Prints Bob's pubkey to share with Alice.
 
 3. **Machine B** — `./demo/b2-try-push-fail.sh`
@@ -70,12 +70,12 @@ localhost as well as WAN.
 10. **Machine A** — `./demo/a5-pull-b-secret.sh`
     - Alice decrypts and views Bob's secret.
 
-11. **Machine C** — `./demo/c1-clone.sh pear://...`
-    - An outsider clones. Source code is visible (pear-git doesn't hide git
+11. **Machine C** — `./demo/c1-clone.sh gittorrent://...`
+    - An outsider clones. Source code is visible (gittorrent doesn't hide git
       data); the encrypted secret blobs are in the swarm.
 
 12. **Machine C** — `./demo/c2-cannot-read-secret.sh`
-    - Eve tries to `pear-git secrets get bob-shared.env`. **Fails** — no key
+    - Eve tries to `gittorrent secrets get bob-shared.env`. **Fails** — no key
       envelope was sealed for her pubkey.
 
 13. **Machine A** — `./demo/a6-add-secret-as-indexer.sh`
@@ -88,10 +88,10 @@ localhost as well as WAN.
 
 ```bash
 # on every machine
-rm -f ./pear-demo.env
-rm -rf ~/pear-demo-a ~/pear-demo-b ~/pear-demo-c
-pkill -f "pear-git seed"
-rm -rf ~/.pear-git/stores  # nuclear — drops all pear-git state
+rm -f ./gittorrent-demo.env
+rm -rf ~/gittorrent-demo-a ~/gittorrent-demo-b ~/gittorrent-demo-c
+pkill -f "gittorrent seed"
+rm -rf ~/.gittorrent/stores  # nuclear — drops all gittorrent state
 ```
 
 Then start again at step 1. Run `./demo/reset.sh` to do all of the above.
@@ -100,7 +100,7 @@ Then start again at step 1. Run `./demo/reset.sh` to do all of the above.
 
 - Each script prints the next script to run at the bottom, so you don't need
   to memorise the order.
-- `pear-git status` between any two steps is a good way to show the current
+- `gittorrent status` between any two steps is a good way to show the current
   writer/indexer set and the peer count.
-- If the seeder crashes or is killed, any `pear-git` command auto-spawns a new
-  one. You can always `ps aux | grep "pear-git seed"` to confirm it's running.
+- If the seeder crashes or is killed, any `gittorrent` command auto-spawns a new
+  one. You can always `ps aux | grep "gittorrent seed"` to confirm it's running.

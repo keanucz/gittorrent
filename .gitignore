@@ -10,3 +10,4 @@ secrets/
 .pear-git/
 .claude
 .claude-octopus/
+.firecrawl/

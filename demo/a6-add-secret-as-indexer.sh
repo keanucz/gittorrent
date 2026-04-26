@@ -16,7 +16,7 @@ run "cat '$SECRET_FILE'"
 
 pause
 
-run "cd '$DEMO_DIR' && pear-git secrets add '$SECRET_FILE' --name alice-shared.env"
+run "cd '$DEMO_DIR' && gittorrent secrets add '$SECRET_FILE' --name alice-shared.env"
 rm -f "$SECRET_FILE"
 
 pause

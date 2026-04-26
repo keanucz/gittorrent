@@ -135,22 +135,22 @@ function makeOutput () {
 // Test Suite
 // ============================================================================
 
-describe('pear-git status', () => {
+describe('gittorrent status', () => {
   // AC1: module-not-found — tested implicitly by the top-level import above.
   // If status.js does not exist, ALL tests in this file fail at module load time.
   test('AC1: run is exported as a function from lib/commands/status.js', () => {
     assert.equal(typeof run, 'function', 'run should be a function')
   })
 
-  // AC2: output contains "Repo: pear://<hex key>"
-  test('AC2: human output contains "Repo: pear://<key>" (hex of repo.key)', async () => {
+  // AC2: output contains "Repo: gittorrent://<hex key>"
+  test('AC2: human output contains "Repo: gittorrent://<key>" (hex of repo.key)', async () => {
     const repo = makeRepoMockWithSecrets()
     const out = makeOutput()
 
     await run([], { repo, swarm: swarmMock, output: out })
 
     const expectedHex = KEY.toString('hex')
-    assert.match(out.text, new RegExp(`Repo: pear://${expectedHex}`))
+    assert.match(out.text, new RegExp(`Repo: gittorrent://${expectedHex}`))
   })
 
   // AC3: output contains "Peers: <n> connected"
@@ -310,8 +310,8 @@ describe('pear-git status', () => {
     )
   })
 
-  // AC14: exit code 1 when not inside a pear-git repo — throws CliError with code 1
-  test('AC14: throws CliError with code 1 when repo is null (not a pear-git repo)', async () => {
+  // AC14: exit code 1 when not inside a gittorrent repo — throws CliError with code 1
+  test('AC14: throws CliError with code 1 when repo is null (not a gittorrent repo)', async () => {
     const out = makeOutput()
 
     await assert.rejects(

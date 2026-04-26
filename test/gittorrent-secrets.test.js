@@ -157,7 +157,7 @@ async function writeSecretEntry (db, storePath, plaintext, secretsKey, keyVersio
 // Test Suite: runAdd
 // ============================================================================
 
-describe.skip('pear-git secrets add', () => {
+describe.skip('gittorrent secrets add', () => {
   test('1: reads and stores a file, stdout reports Added <path> (key version: 1)', async () => {
     const { identity, secretsView } = makeIdentityAndSecretsView()
     const secretsDb = makeDb()
@@ -171,7 +171,7 @@ describe.skip('pear-git secrets add', () => {
     const streams = makeStreams()
 
     // Write a temp file to add
-    const tmpFile = path.join(os.tmpdir(), `pear-git-test-${Date.now()}.txt`)
+    const tmpFile = path.join(os.tmpdir(), `gittorrent-test-${Date.now()}.txt`)
     fs.writeFileSync(tmpFile, 'hello secrets')
     try {
       await runAdd([tmpFile], { repo, identity, secretsDb, streams })
@@ -198,7 +198,7 @@ describe.skip('pear-git secrets add', () => {
     }
     const streams = makeStreams()
 
-    const tmpFile = path.join(os.tmpdir(), `pear-git-test-${Date.now()}.txt`)
+    const tmpFile = path.join(os.tmpdir(), `gittorrent-test-${Date.now()}.txt`)
     fs.writeFileSync(tmpFile, 'content')
     try {
       await runAdd([tmpFile, '--name', 'config/.env'], { repo, identity, secretsDb, streams })
@@ -242,7 +242,7 @@ describe.skip('pear-git secrets add', () => {
     }
     const streams = makeStreams()
 
-    const tmpFile = path.join(os.tmpdir(), `pear-git-test-${Date.now()}.txt`)
+    const tmpFile = path.join(os.tmpdir(), `gittorrent-test-${Date.now()}.txt`)
     fs.writeFileSync(tmpFile, 'bootstrap')
     try {
       await runAdd([tmpFile], { repo, identity, secretsDb, streams })
@@ -266,7 +266,7 @@ describe.skip('pear-git secrets add', () => {
     }
     const streams = makeStreams()
 
-    const tmpFile = path.join(os.tmpdir(), `pear-git-test-${Date.now()}.txt`)
+    const tmpFile = path.join(os.tmpdir(), `gittorrent-test-${Date.now()}.txt`)
     fs.writeFileSync(tmpFile, 'data')
     try {
       await assert.rejects(
@@ -293,7 +293,7 @@ describe.skip('pear-git secrets add', () => {
     }
     const streams = makeStreams()
 
-    const tmpFile = path.join(os.tmpdir(), `pear-git-test-${Date.now()}.txt`)
+    const tmpFile = path.join(os.tmpdir(), `gittorrent-test-${Date.now()}.txt`)
     fs.writeFileSync(tmpFile, 'data')
     const longPath = 'a'.repeat(256)
     try {
@@ -341,7 +341,7 @@ describe.skip('pear-git secrets add', () => {
     }
     const streams = makeStreams()
 
-    const tmpFile = path.join(os.tmpdir(), `pear-git-test-${Date.now()}.txt`)
+    const tmpFile = path.join(os.tmpdir(), `gittorrent-test-${Date.now()}.txt`)
     fs.writeFileSync(tmpFile, 'data')
     try {
       await assert.rejects(
@@ -362,7 +362,7 @@ describe.skip('pear-git secrets add', () => {
 // Test Suite: runGet
 // ============================================================================
 
-describe.skip('pear-git secrets get', () => {
+describe.skip('gittorrent secrets get', () => {
   test('7: decrypts and writes plaintext to stdout', async () => {
     const { identity, secretsView, secretsKey } = makeIdentityAndSecretsView()
     const secretsDb = makeDb()
@@ -387,7 +387,7 @@ describe.skip('pear-git secrets get', () => {
 
     const repo = { secretsView }
     const streams = makeStreams()
-    const outFile = path.join(os.tmpdir(), `pear-git-get-${Date.now()}.txt`)
+    const outFile = path.join(os.tmpdir(), `gittorrent-get-${Date.now()}.txt`)
 
     try {
       await runGet(['.env', '--output', outFile], { repo, identity, secretsDb, streams })
@@ -476,7 +476,7 @@ describe.skip('pear-git secrets get', () => {
 // Test Suite: runList
 // ============================================================================
 
-describe.skip('pear-git secrets list', () => {
+describe.skip('gittorrent secrets list', () => {
   test('12: empty store produces no output', async () => {
     const { identity, secretsView } = makeIdentityAndSecretsView()
     const secretsDb = makeDb()
@@ -560,7 +560,7 @@ describe.skip('pear-git secrets list', () => {
 // Test Suite: runRm
 // ============================================================================
 
-describe.skip('pear-git secrets rm', () => {
+describe.skip('gittorrent secrets rm', () => {
   test('16: deletes entry and prints Removed <path>', async () => {
     const { identity, secretsView, secretsKey } = makeIdentityAndSecretsView()
     const secretsDb = makeDb()
@@ -640,7 +640,7 @@ describe.skip('pear-git secrets rm', () => {
 // Test Suite: runRotate
 // ============================================================================
 
-describe.skip('pear-git secrets rotate', () => {
+describe.skip('gittorrent secrets rotate', () => {
   test('19: rotates key, re-encrypts files, stdout reports new version and file count', async () => {
     const { identity, secretsView, secretsKey } = makeIdentityAndSecretsView()
     const secretsDb = makeDb()

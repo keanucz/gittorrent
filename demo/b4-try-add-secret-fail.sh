@@ -16,7 +16,7 @@ run "cat '$SECRET_FILE'"
 pause
 
 set +e
-run "cd '$DEMO_DIR' && pear-git secrets add '$SECRET_FILE' --name bobs-secret.env"
+run "cd '$DEMO_DIR' && gittorrent secrets add '$SECRET_FILE' --name bobs-secret.env"
 code=$?
 set -e
 
@@ -27,7 +27,7 @@ else
   exit 1
 fi
 
-B_PUBKEY=$(cd "$DEMO_DIR" && pear-git whoami)
+B_PUBKEY=$(cd "$DEMO_DIR" && gittorrent whoami)
 echo
 echo "${BOLD}Send this pubkey to Machine A and ask to be upgraded to indexer:${RESET}  $B_PUBKEY"
 echo "${BOLD}Machine A runs:${RESET}  B_PUBKEY='$B_PUBKEY' ./demo/a4-grant-secret-access.sh"

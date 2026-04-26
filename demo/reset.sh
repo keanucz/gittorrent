@@ -5,10 +5,10 @@
 source "$(dirname "$0")/_lib.sh"
 
 step "Tearing down demo state on $(hostname)"
-run "pkill -f 'pear-git seed' || true"
-run "rm -f ./pear-demo.env"
-run "rm -rf \"$HOME/pear-demo-a\" \"$HOME/pear-demo-b\" \"$HOME/pear-demo-c\""
-run "rm -rf \"$HOME/.pear-git/stores\""
-run "rm -rf /tmp/pear-git-rpc /tmp/pear-git-sockets"
+run "pkill -f 'gittorrent seed' || true"
+run "rm -f ./gittorrent-demo.env"
+run "rm -rf \"$HOME/gittorrent-demo-a\" \"$HOME/gittorrent-demo-b\" \"$HOME/gittorrent-demo-c\""
+run "rm -rf \"$HOME/.gittorrent/stores\""
+run "rm -rf /tmp/gittorrent-rpc /tmp/gittorrent-sockets"
 
 ok "reset complete"

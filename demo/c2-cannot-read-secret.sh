@@ -10,7 +10,7 @@ require_env DEMO_DIR "Run ./demo/c1-clone.sh first."
 
 step "Machine C — Step 2: try to decrypt bob-shared.env"
 set +e
-run "cd '$DEMO_DIR' && pear-git secrets get bob-shared.env"
+run "cd '$DEMO_DIR' && gittorrent secrets get bob-shared.env"
 code=$?
 set -e
 

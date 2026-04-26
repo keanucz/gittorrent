@@ -16,12 +16,12 @@ fi
 save_env B_PUBKEY "$B_PUBKEY"
 
 step "Machine A — Step 2: invite Bob ($B_PUBKEY) as a writer"
-run "cd '$DEMO_DIR' && pear-git invite '$B_PUBKEY'"
+run "cd '$DEMO_DIR' && gittorrent invite '$B_PUBKEY'"
 
 pause
 
 step "Confirm the writer list"
-run "cd '$DEMO_DIR' && pear-git status"
+run "cd '$DEMO_DIR' && gittorrent status"
 
 pause
 

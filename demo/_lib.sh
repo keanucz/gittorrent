@@ -34,9 +34,9 @@ fail() {
 }
 
 # Wait for user to press Enter so judges have time to read.  Disable with
-# PEAR_DEMO_NONINTERACTIVE=1 for automated runs.
+# GITTORRENT_DEMO_NONINTERACTIVE=1 for automated runs.
 pause() {
-  if [[ "${PEAR_DEMO_NONINTERACTIVE:-0}" == "1" ]]; then return; fi
+  if [[ "${GITTORRENT_DEMO_NONINTERACTIVE:-0}" == "1" ]]; then return; fi
   echo
   echo "${YELLOW}[press ENTER to continue]${RESET}"
   read -r _ || true
@@ -44,7 +44,7 @@ pause() {
 
 # Persist key/value pairs across steps via demo.env.  Each machine writes to
 # its own local demo.env in the cwd where the scripts are run.
-ENV_FILE="${PEAR_DEMO_ENV:-./pear-demo.env}"
+ENV_FILE="${GITTORRENT_DEMO_ENV:-./gittorrent-demo.env}"
 save_env() {
   # save_env KEY VALUE
   local key="$1"; shift
@@ -74,10 +74,10 @@ require_env() {
   fi
 }
 
-# Prerequisites check: pear-git must be on PATH.
+# Prerequisites check: gittorrent must be on PATH.
 check_prereqs() {
-  if ! command -v pear-git >/dev/null 2>&1; then
-    fail "pear-git not found on PATH."
+  if ! command -v gittorrent >/dev/null 2>&1; then
+    fail "gittorrent not found on PATH."
     fail "From the gittorrent repo root, run: npm link    (or: bash scripts/install.sh)"
     exit 1
   fi

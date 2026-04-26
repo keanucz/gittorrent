@@ -10,7 +10,7 @@ Built on [Hyperswarm](https://github.com/holepunchto/hyperswarm) + [Autobase](ht
 Developer A                          Developer B
     │                                    │
     │  git push origin master            │
-    │  ──────► Autobase (local) ◄────────┤  git clone pear://...
+    │  ──────► Autobase (local) ◄────────┤  git clone gittorrent://...
     │          │                         │
     │          ▼                         │
     │     Hyperswarm DHT                 │
@@ -22,7 +22,7 @@ Developer A                          Developer B
          (UDP hole punching)
 ```
 
-- Repos are identified by `pear://` URLs (base58-encoded public keys)
+- Repos are identified by `gittorrent://` URLs (base58-encoded public keys)
 - Writers are authenticated via ed25519 identity keys
 - Secrets are encrypted with sealed box crypto — only invited writers can decrypt
 
@@ -42,25 +42,25 @@ export PATH="$PWD/bin:$PATH"
 ```bash
 cd my-project
 git init && git add . && git commit -m "init"
-pear-git init                    # → pear://ABC123...
+gittorrent init                    # → gittorrent://ABC123...
 git push origin master
-pear-git seed -d                 # seed in background
+gittorrent seed -d                 # seed in background
 ```
 
 ### Clone it (another machine)
 
 ```bash
-git clone pear://ABC123...
+git clone gittorrent://ABC123...
 ```
 
 ### Give someone write access
 
 ```bash
 # They run:
-pear-git whoami                  # → prints their pubkey
+gittorrent whoami                  # → prints their pubkey
 
 # You run:
-pear-git invite <their-pubkey>
+gittorrent invite <their-pubkey>
 
 # Now they can push
 ```
@@ -69,31 +69,31 @@ pear-git invite <their-pubkey>
 
 ```bash
 # Encrypt and store:
-pear-git secrets add .env
-pear-git secrets add prod.key --name keys/prod.key
+gittorrent secrets add .env
+gittorrent secrets add prod.key --name keys/prod.key
 
 # Collaborator retrieves:
-pear-git secrets get .env --output .env
+gittorrent secrets get .env --output .env
 
 # List stored secrets:
-pear-git secrets list
+gittorrent secrets list
 
 # After revoking someone, rotate the key:
-pear-git secrets rotate
+gittorrent secrets rotate
 ```
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `pear-git init` | Initialise a pear-git repo |
-| `pear-git whoami` | Print your public key |
-| `pear-git invite <pubkey>` | Add a writer (optionally `--indexer`) |
-| `pear-git revoke <pubkey>` | Remove a writer |
-| `pear-git status` | Show repo info, peers, writers |
-| `pear-git seed [-d]` | Seed the repo (`-d` for daemon mode) |
-| `pear-git secrets add/get/list/rm/rotate` | Manage encrypted secrets |
-| `pear-git help` | Show help |
+| `gittorrent init` | Initialise a gittorrent repo |
+| `gittorrent whoami` | Print your public key |
+| `gittorrent invite <pubkey>` | Add a writer (optionally `--indexer`) |
+| `gittorrent revoke <pubkey>` | Remove a writer |
+| `gittorrent status` | Show repo info, peers, writers |
+| `gittorrent seed [-d]` | Seed the repo (`-d` for daemon mode) |
+| `gittorrent secrets add/get/list/rm/rotate` | Manage encrypted secrets |
+| `gittorrent help` | Show help |
 
 All commands support `--help`.
 
@@ -118,10 +118,10 @@ All commands support `--help`.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PEAR_GIT_DATA_DIR` | `~/.pear-git` | Data directory |
-| `PEAR_GIT_LOG_LEVEL` | `warn` | `error\|warn\|info\|debug` |
-| `PEAR_GIT_BOOTSTRAP_NODES` | built-in relay | Custom DHT bootstrap nodes |
-| `PEAR_GIT_LINGER_MS` | `3000` | Post-push replication time (ms) |
+| `GITTORRENT_DATA_DIR` | `~/.gittorrent` | Data directory |
+| `GITTORRENT_LOG_LEVEL` | `warn` | `error\|warn\|info\|debug` |
+| `GITTORRENT_BOOTSTRAP_NODES` | built-in relay | Custom DHT bootstrap nodes |
+| `GITTORRENT_LINGER_MS` | `3000` | Post-push replication time (ms) |
 
 ## Development
 

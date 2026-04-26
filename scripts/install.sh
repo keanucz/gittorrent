@@ -4,11 +4,11 @@ set -euo pipefail
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 mkdir -p "$INSTALL_DIR"
 
-cp dist/git-remote-pear "$INSTALL_DIR/git-remote-pear"
-cp dist/pear-git        "$INSTALL_DIR/pear-git"
+cp dist/git-remote-gittorrent "$INSTALL_DIR/git-remote-gittorrent"
+cp dist/gittorrent        "$INSTALL_DIR/gittorrent"
 
-chmod +x "$INSTALL_DIR/git-remote-pear"
-chmod +x "$INSTALL_DIR/pear-git"
+chmod +x "$INSTALL_DIR/git-remote-gittorrent"
+chmod +x "$INSTALL_DIR/gittorrent"
 
 echo "Installed to $INSTALL_DIR"
 

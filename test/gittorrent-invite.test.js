@@ -9,7 +9,7 @@ import { CliError } from '../lib/commands/cli-error.js'
 /**
  * Test Design Decision:
  * The `run()` functions throw a custom `CliError` on failures with a `.code` property.
- * The dispatcher in `bin/pear-git` translates `err.code` to `process.exit(code)`.
+ * The dispatcher in `bin/gittorrent` translates `err.code` to `process.exit(code)`.
  * This keeps tests cleaner by avoiding `process.exit` mocking.
  */
 
@@ -76,10 +76,10 @@ function makeStreams () {
 }
 
 // ============================================================================
-// Test Suite: pear-git invite
+// Test Suite: gittorrent invite
 // ============================================================================
 
-describe('pear-git invite', () => {
+describe('gittorrent invite', () => {
   const INDEXER_PUBKEY = 'a'.repeat(64)
   const NON_INDEXER_PUBKEY = 'b'.repeat(64)
   const NEW_WRITER_PUBKEY = 'c'.repeat(64)
@@ -344,10 +344,10 @@ describe('pear-git invite', () => {
 })
 
 // ============================================================================
-// Test Suite: pear-git revoke
+// Test Suite: gittorrent revoke
 // ============================================================================
 
-describe('pear-git revoke', () => {
+describe('gittorrent revoke', () => {
   const INDEXER_PUBKEY = 'a'.repeat(64)
   const NON_INDEXER_PUBKEY = 'b'.repeat(64)
   const TARGET_WRITER_PUBKEY = 'c'.repeat(64)
@@ -410,7 +410,7 @@ describe('pear-git revoke', () => {
     )
     assert.match(
       stderrText,
-      /Run 'pear-git secrets rotate' to revoke their access\./i,
+      /Run 'gittorrent secrets rotate' to revoke their access\./i,
       'stderr should contain second line of warning'
     )
   })

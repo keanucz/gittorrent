@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Machine A — step 4: upgrade Machine B to indexer so they can read/write
-# secrets. Under the hood this is `pear-git invite --indexer` plus a key
+# secrets. Under the hood this is `gittorrent invite --indexer` plus a key
 # envelope distribution op so B can decrypt the shared secrets key.
 # -----------------------------------------------------------------------------
 
@@ -22,7 +22,7 @@ step "Machine A — Step 4: seed the shared secrets key (if not done already)"
 # distributeSecretsKey can seal a copy for them.
 SEED_FILE="$(mktemp)"
 run "echo 'ALICE_BOOTSTRAP=seed-$(date +%s)' > '$SEED_FILE'"
-run "cd '$DEMO_DIR' && pear-git secrets add '$SEED_FILE' --name alice-bootstrap.env"
+run "cd '$DEMO_DIR' && gittorrent secrets add '$SEED_FILE' --name alice-bootstrap.env"
 rm -f "$SEED_FILE"
 
 pause
@@ -31,20 +31,20 @@ step "Promote Bob to indexer (writers + secrets read/write access)"
 # If Bob is already a non-indexer writer, 'invite' will refuse ("already a
 # writer"). Handle both cases.
 set +e
-( cd "$DEMO_DIR" && pear-git invite "$B_PUBKEY" --indexer )
+( cd "$DEMO_DIR" && gittorrent invite "$B_PUBKEY" --indexer )
 code=$?
 set -e
 if [[ $code -ne 0 ]]; then
   say "invite refused (Bob is already a writer). Re-adding at indexer level..."
-  run "cd '$DEMO_DIR' && pear-git revoke '$B_PUBKEY'"
+  run "cd '$DEMO_DIR' && gittorrent revoke '$B_PUBKEY'"
   wait_for_seed 2
-  run "cd '$DEMO_DIR' && pear-git invite '$B_PUBKEY' --indexer"
+  run "cd '$DEMO_DIR' && gittorrent invite '$B_PUBKEY' --indexer"
 fi
 
 pause
 
 step "Confirm both writers are indexers now"
-run "cd '$DEMO_DIR' && pear-git status"
+run "cd '$DEMO_DIR' && gittorrent status"
 
 pause
 

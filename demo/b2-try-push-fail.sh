@@ -9,7 +9,7 @@ load_env
 require_env DEMO_DIR "Run ./demo/b1-clone.sh first."
 
 step "Machine B — Step 2: make a change"
-run "cd '$DEMO_DIR' && git config user.email 'bob@pear.demo' && git config user.name 'Bob'"
+run "cd '$DEMO_DIR' && git config user.email 'bob@gittorrent.demo' && git config user.name 'Bob'"
 run "cd '$DEMO_DIR' && echo 'Added by Bob on Machine B' >> README.md"
 run "cd '$DEMO_DIR' && git add README.md && git commit -m 'Bob: add line to README'"
 
@@ -32,7 +32,7 @@ pause
 
 step "What now?"
 echo "Send your pubkey to Machine A — they need to invite you as a writer."
-B_PUBKEY=$(cd "$DEMO_DIR" && pear-git whoami)
+B_PUBKEY=$(cd "$DEMO_DIR" && gittorrent whoami)
 echo
 echo "${BOLD}Machine A runs:${RESET}"
 echo "   B_PUBKEY='$B_PUBKEY' ./demo/a2-grant-write.sh"

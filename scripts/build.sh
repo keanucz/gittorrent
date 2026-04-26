@@ -5,15 +5,15 @@ echo "Building gittorrent binaries..."
 
 mkdir -p dist/
 
-npx bare-bundle bin/git-remote-pear --output dist/git-remote-pear
-chmod +x dist/git-remote-pear
+npx bare-bundle bin/git-remote-gittorrent --output dist/git-remote-gittorrent
+chmod +x dist/git-remote-gittorrent
 
-npx bare-bundle bin/pear-git --output dist/pear-git
-chmod +x dist/pear-git
+npx bare-bundle bin/gittorrent --output dist/gittorrent
+chmod +x dist/gittorrent
 
 echo ""
 echo "Built:"
-echo "  dist/git-remote-pear"
-echo "  dist/pear-git"
+echo "  dist/git-remote-gittorrent"
+echo "  dist/gittorrent"
 echo ""
 echo "Run ./scripts/install.sh to install to PATH."

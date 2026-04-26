@@ -19,14 +19,14 @@ function makeEnv (dataDir) {
   return {
     ...process.env,
     PATH: `${BIN_DIR}${path.delimiter}${process.env.PATH}`,
-    PEAR_GIT_DATA_DIR: dataDir,
-    PEAR_GIT_LOG_LEVEL: 'warn',
-    PEAR_GIT_RELAY: 'off'
+    GITTORRENT_DATA_DIR: dataDir,
+    GITTORRENT_LOG_LEVEL: 'warn',
+    GITTORRENT_RELAY: 'off'
   }
 }
 
 async function withRepo (dataDir, repoUrl, identity, fn) {
-  const repoKey = Buffer.from(bs58.decode(repoUrl.replace('pear://', '')))
+  const repoKey = Buffer.from(bs58.decode(repoUrl.replace('gittorrent://', '')))
   const storePath = join(dataDir, 'stores', bs58.encode(repoKey))
   const store = new Corestore(storePath)
   await store.ready()
@@ -49,7 +49,7 @@ describe('e2e: clone-push-pull (single-peer)', { timeout: 60000 }, () => {
   let identity
 
   before(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'pear-git-e2e-'))
+    tmpDir = await mkdtemp(join(tmpdir(), 'gittorrent-e2e-'))
     workDir = join(tmpDir, 'work')
     cloneDir = join(tmpDir, 'clone')
     dataDir = join(tmpDir, 'data')
@@ -72,9 +72,9 @@ describe('e2e: clone-push-pull (single-peer)', { timeout: 60000 }, () => {
     if (tmpDir) await rm(tmpDir, { recursive: true, force: true }).catch(() => {})
   })
 
-  test('AC1: init creates a pear:// origin', async () => {
+  test('AC1: init creates a gittorrent:// origin', async () => {
     const { stdout } = await execFileAsync('git', ['remote', 'get-url', 'origin'], { cwd: workDir })
-    assert.ok(stdout.trim().startsWith('pear://'), 'origin should be a pear:// URL')
+    assert.ok(stdout.trim().startsWith('gittorrent://'), 'origin should be a gittorrent:// URL')
   })
 
   test('AC2: push uploads objects and updates ref', async () => {

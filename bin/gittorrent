@@ -17,13 +17,13 @@ const args = process.argv.slice(3)
 // Help text
 // ---------------------------------------------------------------------------
 
-const MAIN_HELP = `pear-git — decentralised git collaboration over Hyperswarm
+const MAIN_HELP = `gittorrent — decentralised git collaboration over Hyperswarm
 
 USAGE
-  pear-git <command> [options]
+  gittorrent <command> [options]
 
 COMMANDS
-  init              Initialise a pear-git repo in the current git directory
+  init              Initialise a gittorrent repo in the current git directory
   invite <pubkey>   Add a collaborator as a writer (optionally --indexer)
   revoke <pubkey>   Remove a collaborator's write access
   status            Show repo status, peers, writers, and secrets info
@@ -41,69 +41,69 @@ SECRETS SUBCOMMANDS
 
 QUICK START
   1. cd my-project && git init && git add . && git commit -m "init"
-  2. pear-git init                         # creates pear:// URL
+  2. gittorrent init                         # creates gittorrent:// URL
   3. git push origin master                # pushes to the swarm
-  4. pear-git seed -d                      # seed in background
-  5. # collaborator: git clone pear://...  # clones from the swarm
-  6. pear-git whoami                       # show your key
-  7. pear-git invite <their-pubkey>        # give them write access
-  8. pear-git secrets add .env             # encrypt .env for the team
-  9. # collaborator: pear-git secrets get .env --output .env
+  4. gittorrent seed -d                      # seed in background
+  5. # collaborator: git clone gittorrent://...  # clones from the swarm
+  6. gittorrent whoami                       # show your key
+  7. gittorrent invite <their-pubkey>        # give them write access
+  8. gittorrent secrets add .env             # encrypt .env for the team
+  9. # collaborator: gittorrent secrets get .env --output .env
 
 ENVIRONMENT
-  PEAR_GIT_DATA_DIR        Data directory (default: ~/.pear-git)
-  PEAR_GIT_LOG_LEVEL       Log level: error|warn|info|debug (default: warn)
-  PEAR_GIT_BOOTSTRAP_NODES Comma-separated DHT bootstrap addresses
-  PEAR_GIT_SEEDER_KEYS     Comma-separated pear:// URLs for seeding
+  GITTORRENT_DATA_DIR        Data directory (default: ~/.gittorrent)
+  GITTORRENT_LOG_LEVEL       Log level: error|warn|info|debug (default: warn)
+  GITTORRENT_BOOTSTRAP_NODES Comma-separated DHT bootstrap addresses
+  GITTORRENT_SEEDER_KEYS     Comma-separated gittorrent:// URLs for seeding
 
 More info: https://github.com/keanucz/gittorrent
 `
 
-const INIT_HELP = `pear-git init — initialise a pear-git repo
+const INIT_HELP = `gittorrent init — initialise a gittorrent repo
 
 USAGE
-  pear-git init [--name <alias>]
+  gittorrent init [--name <alias>]
 
-Creates an Autobase-backed repo, sets the git origin to a pear:// URL,
+Creates an Autobase-backed repo, sets the git origin to a gittorrent:// URL,
 and seeds the current HEAD so collaborators can clone immediately.
 
 Run this inside an existing git repo that has at least one commit.
 `
 
-const INVITE_HELP = `pear-git invite — add a collaborator
+const INVITE_HELP = `gittorrent invite — add a collaborator
 
 USAGE
-  pear-git invite <pubkey> [--indexer]
+  gittorrent invite <pubkey> [--indexer]
 
 OPTIONS
-  <pubkey>      64-char hex public key (collaborator runs 'pear-git whoami')
+  <pubkey>      64-char hex public key (collaborator runs 'gittorrent whoami')
   --indexer     Grant indexer privileges (can invite/revoke others)
 
 The invited collaborator can then push to the repo. If a secrets key
 exists, it is automatically distributed to the new writer.
 `
 
-const REVOKE_HELP = `pear-git revoke — remove a collaborator
+const REVOKE_HELP = `gittorrent revoke — remove a collaborator
 
 USAGE
-  pear-git revoke <pubkey>
+  gittorrent revoke <pubkey>
 
-Removes write access. Run 'pear-git secrets rotate' afterwards to
+Removes write access. Run 'gittorrent secrets rotate' afterwards to
 revoke their access to future secrets.
 `
 
-const STATUS_HELP = `pear-git status — show repo info
+const STATUS_HELP = `gittorrent status — show repo info
 
 USAGE
-  pear-git status [--json]
+  gittorrent status [--json]
 
 Shows: repo URL, connected peers, writers, indexers, secrets info.
 `
 
-const SECRETS_HELP = `pear-git secrets — manage encrypted team secrets
+const SECRETS_HELP = `gittorrent secrets — manage encrypted team secrets
 
 USAGE
-  pear-git secrets <subcommand> [options]
+  gittorrent secrets <subcommand> [options]
 
 SUBCOMMANDS
   add <file> [--name <path>]   Encrypt a local file and store it in the repo
@@ -119,18 +119,18 @@ HOW IT WORKS
   someone, run 'secrets rotate' to generate a new key they can't read.
 
 EXAMPLE
-  pear-git secrets add .env                  # encrypt .env
-  pear-git secrets add prod.key --name keys/prod.key
-  pear-git secrets get .env                  # prints to stdout
-  pear-git secrets get .env --output .env    # writes to file
-  pear-git secrets list                      # show all paths
-  pear-git secrets rotate                    # rotate after revoking someone
+  gittorrent secrets add .env                  # encrypt .env
+  gittorrent secrets add prod.key --name keys/prod.key
+  gittorrent secrets get .env                  # prints to stdout
+  gittorrent secrets get .env --output .env    # writes to file
+  gittorrent secrets list                      # show all paths
+  gittorrent secrets rotate                    # rotate after revoking someone
 `
 
-const SEED_HELP = `pear-git seed — replicate repos in the background
+const SEED_HELP = `gittorrent seed — replicate repos in the background
 
 USAGE
-  pear-git seed [pear://url ...] [--human] [--daemon|-d]
+  gittorrent seed [gittorrent://url ...] [--human] [--daemon|-d]
 
 If no URLs are given, seeds the current repo (reads origin from git).
 
@@ -142,14 +142,14 @@ Keeps the process running, replicating the given repos to any
 connecting peers. Use --daemon to background it automatically.
 `
 
-const WHOAMI_HELP = `pear-git whoami — show your writer key for this repo
+const WHOAMI_HELP = `gittorrent whoami — show your writer key for this repo
 
 USAGE
-  pear-git whoami
+  gittorrent whoami
 
 Prints the 64-char hex key that identifies you in this repo.
-Run inside a pear-git repo. Share this with the repo owner so they
-can run 'pear-git invite <key>' to give you write access.
+Run inside a gittorrent repo. Share this with the repo owner so they
+can run 'gittorrent invite <key>' to give you write access.
 `
 
 function showHelp (text) {
@@ -239,7 +239,7 @@ async function dispatch () {
         await ctx.close()
       } catch {
         const { loadIdentity } = await import('../lib/identity.js')
-        const dataDir = process.env.PEAR_GIT_DATA_DIR || join(homedir(), '.pear-git')
+        const dataDir = process.env.GITTORRENT_DATA_DIR || join(homedir(), '.gittorrent')
         const identity = await loadIdentity(dataDir)
         process.stdout.write(identity.publicKey.toString('hex') + '\n')
       }
@@ -271,8 +271,8 @@ async function dispatch () {
           case 'rm': await runRm(secretsArgs, secretsOpts); break
           case 'rotate': await runRotate(secretsArgs, secretsOpts); break
           default:
-            process.stderr.write(`pear-git: unknown secrets subcommand: ${secretsSub}\n`)
-            process.stderr.write("Run 'pear-git secrets --help' for usage.\n")
+            process.stderr.write(`gittorrent: unknown secrets subcommand: ${secretsSub}\n`)
+            process.stderr.write("Run 'gittorrent secrets --help' for usage.\n")
             process.exit(1)
         }
       } finally {
@@ -282,8 +282,8 @@ async function dispatch () {
     }
 
     default:
-      process.stderr.write(`pear-git: unknown command: ${sub}\n`)
-      process.stderr.write("Run 'pear-git help' for available commands.\n")
+      process.stderr.write(`gittorrent: unknown command: ${sub}\n`)
+      process.stderr.write("Run 'gittorrent help' for available commands.\n")
       process.exit(1)
   }
 }
@@ -295,6 +295,6 @@ try {
     process.exit(err.code)
   }
   const message = err && err.message ? err.message : String(err)
-  process.stderr.write('pear-git: error: ' + message + '\n')
+  process.stderr.write('gittorrent: error: ' + message + '\n')
   process.exit(1)
 }

@@ -12,8 +12,8 @@
     "install:bins": "bash scripts/install.sh"
   },
   "bin": {
-    "git-remote-pear": "./bin/git-remote-pear",
-    "pear-git": "./bin/pear-git"
+    "git-remote-gittorrent": "./bin/git-remote-gittorrent",
+    "gittorrent": "./bin/gittorrent"
   },
   "dependencies": {
     "@hyperswarm/dht-relay": "^0.4.3",

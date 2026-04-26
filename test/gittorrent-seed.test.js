@@ -30,7 +30,7 @@ class MockSwarm extends EventEmitter {
   }
 }
 
-describe('pear-git seed', () => {
+describe('gittorrent seed', () => {
   let swarm
   let output
   let opts
@@ -40,7 +40,7 @@ describe('pear-git seed', () => {
     output = new PassThrough()
     const testId = Math.random().toString(36).slice(2)
     opts = {
-      dataDir: join('/tmp', 'pear-git-test-' + testId),
+      dataDir: join('/tmp', 'gittorrent-test-' + testId),
       swarm,
       output
     }
@@ -56,12 +56,12 @@ describe('pear-git seed', () => {
     assert.strictEqual(content, null, 'should not output anything when no repos given')
   })
 
-  test('run with one pear:// URL joins the swarm', async () => {
+  test('run with one gittorrent:// URL joins the swarm', async () => {
     const { run } = await import(COMMAND_PATH)
     const ac = new AbortController()
     const repoKey = 'gK3pQzM2V1pYw5S7p9QzM2V1pYw5S7p9QzM2V1pYw5S7' // dummy
     
-    const promise = run([`pear://${repoKey}`], { ...opts, signal: ac.signal })
+    const promise = run([`gittorrent://${repoKey}`], { ...opts, signal: ac.signal })
     
     // Give it a tick to reach swarm.join
     await new Promise(resolve => setTimeout(resolve, 50))
@@ -78,7 +78,7 @@ describe('pear-git seed', () => {
     const ac = new AbortController()
     const repoKey = 'abc'
     
-    const promise = run([`pear://${repoKey}`], { ...opts, signal: ac.signal })
+    const promise = run([`gittorrent://${repoKey}`], { ...opts, signal: ac.signal })
     
     await new Promise(resolve => setTimeout(resolve, 50))
     
@@ -98,7 +98,7 @@ describe('pear-git seed', () => {
   test('emits peer-left JSON event on stdout', async () => {
     const { run } = await import(COMMAND_PATH)
     const ac = new AbortController()
-    const promise = run([`pear://abc`], { ...opts, signal: ac.signal })
+    const promise = run([`gittorrent://abc`], { ...opts, signal: ac.signal })
     
     await new Promise(resolve => setTimeout(resolve, 50))
     
@@ -116,7 +116,7 @@ describe('pear-git seed', () => {
   test('--human flag switches to human-readable output', async () => {
     const { run } = await import(COMMAND_PATH)
     const ac = new AbortController()
-    const promise = run(['--human', `pear://abc`], { ...opts, signal: ac.signal })
+    const promise = run(['--human', `gittorrent://abc`], { ...opts, signal: ac.signal })
     
     await new Promise(resolve => setTimeout(resolve, 50))
     
@@ -133,11 +133,11 @@ describe('pear-git seed', () => {
     })
   })
 
-  test('PEAR_GIT_SEEDER_KEYS env var adds repos to seed', async () => {
+  test('GITTORRENT_SEEDER_KEYS env var adds repos to seed', async () => {
     const { run } = await import(COMMAND_PATH)
     const ac = new AbortController()
     
-    process.env.PEAR_GIT_SEEDER_KEYS = 'pear://gK3pQzM2V1pYw5S7p9QzM2V1pYw5S7p9QzM2V1pYw5S7'
+    process.env.GITTORRENT_SEEDER_KEYS = 'gittorrent://gK3pQzM2V1pYw5S7p9QzM2V1pYw5S7p9QzM2V1pYw5S7'
     try {
       const promise = run([], { ...opts, signal: ac.signal })
       await new Promise(resolve => setTimeout(resolve, 50))
@@ -146,14 +146,14 @@ describe('pear-git seed', () => {
       ac.abort()
       await promise
     } finally {
-      delete process.env.PEAR_GIT_SEEDER_KEYS
+      delete process.env.GITTORRENT_SEEDER_KEYS
     }
   })
 
   test('AbortSignal causes clean shutdown and swarm destroy', async () => {
     const { run } = await import(COMMAND_PATH)
     const ac = new AbortController()
-    const promise = run([`pear://abc`], { ...opts, signal: ac.signal })
+    const promise = run([`gittorrent://abc`], { ...opts, signal: ac.signal })
     
     await new Promise(resolve => setTimeout(resolve, 50))
     

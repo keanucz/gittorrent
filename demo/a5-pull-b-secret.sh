@@ -14,11 +14,11 @@ run "cd '$DEMO_DIR' && git pull origin master --rebase || true"
 pause
 
 step "List all secrets visible to the swarm"
-run "cd '$DEMO_DIR' && pear-git secrets list"
+run "cd '$DEMO_DIR' && gittorrent secrets list"
 
 pause
 
 step "Decrypt Bob's secret using Alice's sealed key envelope"
-run "cd '$DEMO_DIR' && pear-git secrets get bob-shared.env"
+run "cd '$DEMO_DIR' && gittorrent secrets get bob-shared.env"
 
 ok "bob-shared.env successfully decrypted on Machine A"

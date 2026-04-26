@@ -15,7 +15,7 @@ run "cd '$DEMO_DIR' && git pull origin master --rebase || true"
 pause
 
 step "Confirm we're now an indexer"
-run "cd '$DEMO_DIR' && pear-git status"
+run "cd '$DEMO_DIR' && gittorrent status"
 
 pause
 
@@ -28,13 +28,13 @@ run "cat '$SECRET_FILE'"
 
 pause
 
-run "cd '$DEMO_DIR' && pear-git secrets add '$SECRET_FILE' --name '$SECRET_PATH'"
+run "cd '$DEMO_DIR' && gittorrent secrets add '$SECRET_FILE' --name '$SECRET_PATH'"
 rm -f "$SECRET_FILE"
 
 pause
 
 step "Confirm the secret shows up in the list"
-run "cd '$DEMO_DIR' && pear-git secrets list"
+run "cd '$DEMO_DIR' && gittorrent secrets list"
 
 pause
 
@@ -43,5 +43,5 @@ run "cd '$DEMO_DIR' && git push origin master || true"
 
 echo
 echo "${BOLD}On Machine A, run:${RESET}  ./demo/a5-pull-b-secret.sh"
-echo "${BOLD}On Machine C, run:${RESET}  ./demo/c1-clone.sh '$(grep ^PEAR_URL= "$ENV_FILE" | cut -d= -f2-)'"
+echo "${BOLD}On Machine C, run:${RESET}  ./demo/c1-clone.sh '$(grep ^GITTORRENT_URL= "$ENV_FILE" | cut -d= -f2-)'"
 ok "done"

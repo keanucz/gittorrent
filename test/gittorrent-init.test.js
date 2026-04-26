@@ -9,14 +9,14 @@ import { initRepo } from '../lib/commands/init.js'
 
 const exec = promisify(execFile)
 
-describe('pear-git init', () => {
+describe('gittorrent init', () => {
   let tmpCwd
   let tmpDataDir
 
   beforeEach(async () => {
     // Create separate temp directories for git repo and data storage
-    tmpCwd = await mkdtemp(join(tmpdir(), 'pear-git-init-cwd-'))
-    tmpDataDir = await mkdtemp(join(tmpdir(), 'pear-git-init-data-'))
+    tmpCwd = await mkdtemp(join(tmpdir(), 'gittorrent-init-cwd-'))
+    tmpDataDir = await mkdtemp(join(tmpdir(), 'gittorrent-init-data-'))
 
     // Initialize git repo with an empty commit
     await exec('git', ['init'], { cwd: tmpCwd })
@@ -46,7 +46,7 @@ describe('pear-git init', () => {
 
   test('AC3: returned .url matches /^pear:\\/\\/[A-Za-z0-9]+$/ (base58 alphabet)', async () => {
     const { url } = await initRepo({ cwd: tmpCwd, dataDir: tmpDataDir })
-    assert.match(url, /^pear:\/\/[A-Za-z0-9]+$/, 'URL should be pear:// followed by base58 characters')
+    assert.match(url, /^gittorrent:\/\/[A-Za-z0-9]+$/, 'URL should be gittorrent:// followed by base58 characters')
   })
 
   test('AC4: after init, git remote get-url origin equals the returned URL', async () => {
@@ -107,7 +107,7 @@ describe('pear-git init', () => {
     // First call succeeds
     await initRepo({ cwd: tmpCwd, dataDir: tmpDataDir })
 
-    // Second call should reject because origin is already set to pear://...
+    // Second call should reject because origin is already set to gittorrent://...
     await assert.rejects(
       () => initRepo({ cwd: tmpCwd, dataDir: tmpDataDir }),
       (err) => {
@@ -121,9 +121,9 @@ describe('pear-git init', () => {
     )
   })
 
-  test('AC9: returned URL starts with pear://', async () => {
+  test('AC9: returned URL starts with gittorrent://', async () => {
     const { url } = await initRepo({ cwd: tmpCwd, dataDir: tmpDataDir })
-    assert.ok(url.startsWith('pear://'), 'URL should start with pear://')
+    assert.ok(url.startsWith('gittorrent://'), 'URL should start with gittorrent://')
   })
 
   test('AC10: after init, dataDir/identity file exists', async () => {
@@ -136,8 +136,8 @@ describe('pear-git init', () => {
   test('AC11: after init, a directory exists at dataDir/stores/<base58KeyFromUrl>', async () => {
     const { url } = await initRepo({ cwd: tmpCwd, dataDir: tmpDataDir })
 
-    // Extract base58 key from pear:// URL
-    const base58Key = url.replace(/^pear:\/\//, '')
+    // Extract base58 key from gittorrent:// URL
+    const base58Key = url.replace(/^gittorrent:\/\//, '')
     assert.ok(base58Key.length > 0, 'base58 key should be extracted from URL')
 
     const storePath = join(tmpDataDir, 'stores', base58Key)
@@ -154,7 +154,7 @@ describe('pear-git init', () => {
 
     assert.ok(result, 'initRepo should accept name option')
     assert.ok(result.url, 'initRepo should still return a URL when name is provided')
-    assert.match(result.url, /^pear:\/\/[A-Za-z0-9]+$/, 'URL should still be valid with name option')
+    assert.match(result.url, /^gittorrent:\/\/[A-Za-z0-9]+$/, 'URL should still be valid with name option')
   })
 
   test('AC13: initRepo resolves with an object containing url property', async () => {
@@ -167,7 +167,7 @@ describe('pear-git init', () => {
 
   test('AC14: URL key is valid base58 (no ambiguous characters 0OIl)', async () => {
     const { url } = await initRepo({ cwd: tmpCwd, dataDir: tmpDataDir })
-    const key = url.replace(/^pear:\/\//, '')
+    const key = url.replace(/^gittorrent:\/\//, '')
 
     // Base58 alphabet excludes 0, O, I, l
     const base58Alphabet = /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/
