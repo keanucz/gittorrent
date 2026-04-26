@@ -324,33 +324,24 @@ describe('gittorrent status', () => {
     )
   })
 
-  // AC15: exit code 3 when no peers connected — throws CliError with code 3 but still writes local state
-  test('AC15: throws CliError with code 3 when no peers connected, but still writes output', async () => {
+  // AC15 (updated): status with 0 peers is no longer fatal. Emits a warning
+  // to stderr but exits 0 so UIs (tauri app, scripts, --json consumers) can
+  // still read local state. Previously this threw CliError code 3.
+  test('AC15: completes without throwing when no peers connected (warning on stderr)', async () => {
     const repo = makeRepoMockWithSecrets()
     const out = makeOutput()
+    const stderr = makeOutput()
 
-    await assert.rejects(
-      () => run([], { repo, swarm: swarmMockNoPeers, output: out }),
-      (error) => {
-        assert.ok(error instanceof CliError, 'should throw CliError')
-        assert.equal(error.code, 3, 'CliError.code should be 3')
-        return true
-      }
-    )
-
-    // Local state should still have been written before the throw
+    await run([], { repo, swarm: swarmMockNoPeers, output: out, stderr })
     assert.ok(out.text.length > 0, 'output should contain local state even when no peers')
+    assert.match(stderr.text, /no peers connected/i)
   })
 
-  test('AC15b: output still shows "Peers: 0 connected" before throwing CliError code 3', async () => {
+  test('AC15b: output still shows "Peers: 0 connected" in the status output', async () => {
     const repo = makeRepoMockWithSecrets()
     const out = makeOutput()
 
-    await assert.rejects(
-      () => run([], { repo, swarm: swarmMockNoPeers, output: out }),
-      (error) => error instanceof CliError && error.code === 3
-    )
-
+    await run([], { repo, swarm: swarmMockNoPeers, output: out })
     assert.match(out.text, /Peers: 0 connected/)
   })
 
