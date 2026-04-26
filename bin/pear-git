@@ -258,20 +258,9 @@ async function dispatch () {
       const { runAdd, runGet, runList, runRm, runRotate } = await import('../lib/commands/secrets.js')
       const { loadRepoForCwd } = await import('../lib/commands/load-repo.js')
       const ctx = await loadRepoForCwd()
-      const dataDir = process.env.PEAR_GIT_DATA_DIR || join(homedir(), '.pear-git')
-      const { stdout: originOut } = await execFileAsync('git', ['remote', 'get-url', 'origin'], { cwd: process.cwd() })
-      const encoded = originOut.trim().replace(/^pear:\/\//, '')
-      const repoKey = Buffer.from(bs58.decode(encoded))
-      const storePath = join(dataDir, 'stores', bs58.encode(repoKey))
-      const secretsCorestore = new Corestore(storePath)
-      await secretsCorestore.ready()
-      const secretsCore = secretsCorestore.get({ name: 'secrets' })
-      const secretsDb = new Hyperbee(secretsCore, { keyEncoding: 'utf-8', valueEncoding: 'binary' })
-      await secretsDb.ready()
       const secretsOpts = {
         repo: ctx.repo,
         identity: ctx.identity,
-        secretsDb,
         streams: { stdout: process.stdout, stderr: process.stderr }
       }
       try {
@@ -288,8 +277,6 @@ async function dispatch () {
         }
       } finally {
         await ctx.close()
-        await secretsDb.close()
-        await secretsCorestore.close()
       }
       break
     }

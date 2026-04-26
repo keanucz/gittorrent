@@ -416,4 +416,27 @@ describe('autobase-repo', () => {
     assert.equal(typeof repo.secretsView.get, 'function', 'repo.secretsView should have get()')
     assert.equal(typeof repo.secretsView.put, 'function', 'repo.secretsView should have put()')
   })
+
+  test('secret-put stores blob accessible via getSecretFile', async () => {
+    const payload = Buffer.from('encrypted-blob-bytes')
+    await repo.appendOp({ op: 'secret-put', path: '.env', bytes: payload })
+    const got = await repo.getSecretFile('.env')
+    assert.ok(got, 'blob should be retrievable')
+    assert.ok(got.equals(payload), 'blob should round-trip exactly')
+  })
+
+  test('listSecretFiles returns all stored paths', async () => {
+    await repo.appendOp({ op: 'secret-put', path: 'a', bytes: Buffer.from('x') })
+    await repo.appendOp({ op: 'secret-put', path: 'b', bytes: Buffer.from('y') })
+    const list = await repo.listSecretFiles()
+    assert.ok(list.includes('a'))
+    assert.ok(list.includes('b'))
+  })
+
+  test('secret-del removes a stored blob', async () => {
+    await repo.appendOp({ op: 'secret-put', path: 'gone', bytes: Buffer.from('v') })
+    assert.ok(await repo.hasSecretFile('gone'))
+    await repo.appendOp({ op: 'secret-del', path: 'gone' })
+    assert.ok(!(await repo.hasSecretFile('gone')))
+  })
 })
