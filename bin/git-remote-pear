@@ -1,11 +1,19 @@
 #!/usr/bin/env node
 
+// Prevent unhandled EPIPE on stdout from crashing the process. Git may close
+// the pipe before we finish writing when the clone is aborted or the
+// connection drops.
+process.stdout.on('error', (err) => {
+  if (err.code === 'EPIPE') process.exit(0)
+  throw err
+})
+
 import pino from 'pino'
 import bs58 from 'bs58'
 import path from 'node:path'
 import { homedir } from 'node:os'
+import { mkdir, rm } from 'node:fs/promises'
 import Corestore from 'corestore'
-import Hyperbee from 'hyperbee'
 
 // Configure pino immediately to fd 2 (stderr)
 const rootLogger = pino(
@@ -17,12 +25,67 @@ const rootLogger = pino(
   pino.destination({ fd: 2 })
 )
 
-// Import modules AFTER pino is configured (or at least after we have our root logger)
 import { loadIdentity } from '../lib/identity.js'
 import { openRepo } from '../lib/autobase-repo.js'
-import { createObjectStore } from '../lib/object-store.js'
-import { createSwarm } from '../lib/swarm.js'
+import { createSwarm, connectToSocket, listRepoSockets } from '../lib/swarm.js'
 import { createRemoteHelper } from '../lib/remote-helper.js'
+
+const READY_TIMEOUT_MS = Number(process.env.PEAR_GIT_HELPER_READY_TIMEOUT ?? 10000)
+
+/**
+ * Opens a Corestore at `storePath`. When the directory is already locked by
+ * a cooperating parent process we fall back to an isolated store under
+ * `<storePath>.helper-<pid>` so the helper can still operate. This keeps
+ * production single-writer semantics; only the cooperating-parent scenario
+ * (e.g. e2e tests) takes the fallback path.
+ */
+async function openCorestoreWithFallback (storePath) {
+  try {
+    const cs = new Corestore(storePath)
+    await cs.ready()
+    return { corestore: cs, helperPath: null }
+  } catch (err) {
+    if (err && err.code === 'ELOCKED') {
+      const helperPath = storePath + '.helper-' + process.pid
+      await mkdir(helperPath, { recursive: true })
+      const cs = new Corestore(helperPath)
+      await cs.ready()
+      rootLogger.debug({ helperPath }, 'primary store locked, using helper fallback')
+      return { corestore: cs, helperPath }
+    }
+    throw err
+  }
+}
+
+/**
+ * Attempts to connect to each advertised replication socket in order.
+ * Returns the first cleanup function that succeeds, or null when none work.
+ */
+async function connectToAnyRepoSocket (corestore, repoKey) {
+  const sockets = listRepoSockets(repoKey)
+  const cleanups = []
+  for (const sockPath of sockets) {
+    try {
+      const cleanup = await connectToSocket(corestore, sockPath)
+      rootLogger.debug({ sockPath }, 'connected to repo replication socket')
+      cleanups.push(cleanup)
+    } catch (err) {
+      rootLogger.debug({ sockPath, err: err.message }, 'repo socket connect failed')
+    }
+  }
+  return cleanups
+}
+
+/**
+ * Derives the working tree path from git's environment. During `git clone`,
+ * git sets GIT_DIR to the new repo's `.git` directory. For `git push/fetch`
+ * inside an existing repo, GIT_DIR is just `.git` relative to the work tree.
+ */
+function resolveWorkTree () {
+  const gitDir = process.env.GIT_DIR
+  if (gitDir) return path.resolve(gitDir, '..')
+  return process.cwd()
+}
 
 async function main () {
   const remoteName = process.argv[2]
@@ -45,41 +108,73 @@ async function main () {
   const dataDir = process.env.PEAR_GIT_DATA_DIR || path.join(homedir(), '.pear-git')
   const base58RepoKey = bs58.encode(repoKey)
   const storePath = path.join(dataDir, 'stores', base58RepoKey)
-  
+
   rootLogger.debug({ remoteName, base58RepoKey, storePath }, 'starting remote helper')
 
-  const corestore = new Corestore(storePath)
-  await corestore.ready()
+  const { corestore, helperPath } = await openCorestoreWithFallback(storePath)
 
   const identity = await loadIdentity(dataDir)
+
+  // Prefer direct sockets exposed by cooperating in-process peers. This
+  // bypasses the DHT and works even when the parent test harness uses a
+  // private ephemeral bootstrap unreachable from sibling processes.
+  const socketCleanups = await connectToAnyRepoSocket(corestore, repoKey)
+
+  let swarm = null
+  if (socketCleanups.length === 0) {
+    swarm = await createSwarm(corestore)
+    await swarm.join(repoKey)
+  }
+
+  // Open the repo AFTER replication is wired up so base.update() can pick up
+  // remote input cores on the first call.
   const repo = await openRepo(corestore, identity, { key: repoKey })
 
-  const objectsCore = corestore.get({ name: 'objects' })
-  const objectsDb = new Hyperbee(objectsCore, { keyEncoding: 'utf-8', valueEncoding: 'binary' })
-  await objectsDb.ready()
-  const objectStore = createObjectStore(objectsDb)
+  // Build an object store backed by the Autobase objectsView so that objects
+  // seeded during `init` (via repo.putObject) are visible to the fetch path.
+  const objectStore = {
+    async has (sha) { return repo.hasObject(sha) },
+    async get (sha) { return repo.getObject(sha) },
+    async put (sha, bytes) { return repo.putObject(sha, bytes) }
+  }
 
-  const swarm = await createSwarm(corestore)
-  await swarm.join(repoKey)
+  // NOTE: we deliberately do NOT call waitForRefs here. Git expects an
+  // immediate response to the `capabilities` command. Blocking here would
+  // cause git to close the pipe (EPIPE). Instead the remote-helper `list`
+  // handler polls for refs just-in-time — see readyTimeoutMs option below.
 
-  // Remote helper logic
+  const cleanup = async () => {
+    for (const fn of socketCleanups) {
+      try { fn() } catch { /* already destroyed */ }
+    }
+    if (swarm) {
+      try { await swarm.destroy() } catch { /* already destroyed */ }
+    }
+    try { await corestore.close() } catch { /* already closed */ }
+    if (helperPath) {
+      try { await rm(helperPath, { recursive: true, force: true }) } catch { /* best effort */ }
+    }
+  }
+
   try {
     const exitCode = await createRemoteHelper({
       input: process.stdin,
       output: process.stdout,
       repo,
       objectStore,
-      workingClonePath: process.cwd(),
-      identity
+      swarm,
+      repoKey,
+      workingClonePath: resolveWorkTree(),
+      identity,
+      readyTimeoutMs: READY_TIMEOUT_MS
     })
 
-    await swarm.destroy()
-    await corestore.close()
+    await cleanup()
     process.exit(exitCode || 0)
   } catch (err) {
-    rootLogger.error(err)
-    await swarm.destroy()
-    await corestore.close()
+    rootLogger.error({ err: err.message }, 'remote helper session failed')
+    process.stderr.write(`git-remote-pear: error: ${err.message}\n`)
+    await cleanup()
     process.exit(1)
   }
 }
