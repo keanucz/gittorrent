@@ -131,15 +131,22 @@ async function main () {
   const base58RepoKey = bs58.encode(repoKey)
   const storePath = path.join(dataDir, 'stores', base58RepoKey)
 
-  const progress = (msg) => process.stderr.write(`pear-git: ${msg}\n`)
+  const progress = (msg) => {
+    const buf = Buffer.from(`pear-git: ${msg}\n`)
+    try { writeSync(2, buf) } catch { process.stderr.write(buf) }
+  }
 
   rootLogger.debug({ remoteName, base58RepoKey, storePath }, 'starting remote helper')
   progress(`Connecting to ${base58RepoKey.slice(0, 8)}...`)
 
+  progress('Opening local store...')
   const { corestore, helperPath } = await openCorestoreWithFallback(storePath)
+  progress(helperPath ? `Local store locked — using helper fallback (${helperPath})` : 'Local store ready')
 
+  progress('Loading identity...')
   const identity = await loadIdentity(dataDir)
 
+  progress('Checking for local replication sockets...')
   const socketCleanups = await connectToAnyRepoSocket(corestore, repoKey)
 
   // Open the repo BEFORE joining the swarm so that the Autobase
@@ -148,6 +155,7 @@ async function main () {
   // joined first, the corked muxer could flush its initial announcement
   // before these cores exist, leading to "peer connected but no cores
   // advertised" — exactly the silent-replication symptom we were chasing.
+  progress('Opening Autobase repo...')
   const repo = await openRepo(corestore, identity, { key: repoKey })
   progress('Repo opened, syncing...')
 
