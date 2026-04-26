@@ -129,7 +129,9 @@ EXAMPLE
 const SEED_HELP = `pear-git seed — replicate repos in the background
 
 USAGE
-  pear-git seed <pear://url> [pear://url2 ...] [--human]
+  pear-git seed [pear://url ...] [--human]
+
+If no URLs are given, seeds the current repo (reads origin from git).
 
 OPTIONS
   --human     Human-readable event output instead of JSON
