@@ -24,7 +24,7 @@ export function InitDialog ({ inProgress, onSubmit }: InitDialogProps) {
   return (
     <div className='dialog-card'>
       <h3 className='status-card__label'>Initialize Repository</h3>
-      <p className='route-copy'>Create a local repository and retrieve the new pear:// URL.</p>
+      <p className='route-copy'>Create a local repository and retrieve the new gittorrent:// URL.</p>
       <label className='field-label' htmlFor='init-path'>Repository Path</label>
       <input id='init-path' className='field-input' value={path} onChange={(event) => setPath(event.target.value)} />
       {error && <p className='route-copy'>Error: {error}</p>}

@@ -52,8 +52,8 @@ pub fn map_exit_code(code: Option<i32>) -> UiErrorCode {
   }
 }
 
-pub fn run_pear_git(args: &[&str], cwd: Option<&Path>) -> Result<CommandOutput, UiError> {
-  let mut command = Command::new("pear-git");
+pub fn run_gittorrent(args: &[&str], cwd: Option<&Path>) -> Result<CommandOutput, UiError> {
+  let mut command = Command::new("gittorrent");
   command.args(args);
 
   if let Some(path) = cwd {
@@ -71,7 +71,7 @@ pub fn run_pear_git(args: &[&str], cwd: Option<&Path>) -> Result<CommandOutput, 
   let output = command.output().map_err(|err| {
     UiError::with_details(
       UiErrorCode::Internal,
-      "Unable to execute pear-git command",
+      "Unable to execute gittorrent command",
       err.to_string(),
     )
   })?;
@@ -91,7 +91,7 @@ pub fn run_pear_git(args: &[&str], cwd: Option<&Path>) -> Result<CommandOutput, 
 
   Err(UiError::with_details(
     map_exit_code(output.status.code()),
-    "pear-git command failed",
+    "gittorrent command failed",
     details,
   ))
 }

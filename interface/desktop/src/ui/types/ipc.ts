@@ -102,11 +102,11 @@ export interface SeedStatusResponse {
 }
 
 export interface SettingsResponse {
-  PEAR_GIT_DATA_DIR: string
-  PEAR_GIT_LOG_LEVEL: string
-  PEAR_GIT_BOOTSTRAP_NODES: string
-  PEAR_GIT_SEEDER_KEYS: string
-  PEAR_GIT_CONNECT_TIMEOUT: string
+  GITTORRENT_DATA_DIR: string
+  GITTORRENT_LOG_LEVEL: string
+  GITTORRENT_BOOTSTRAP_NODES: string
+  GITTORRENT_SEEDER_KEYS: string
+  GITTORRENT_CONNECT_TIMEOUT: string
 }
 
 export interface SettingsSetRequest {

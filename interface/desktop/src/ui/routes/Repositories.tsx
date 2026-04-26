@@ -58,7 +58,7 @@ export function RepositoriesRoute ({ selectedPath, onSelectRepo }: RepositoriesR
                 onClick={() => onSelectRepo(repo.path)}
               >
                 <span className='repo-item__path'>{repo.path}</span>
-                <span className='repo-item__url'>{repo.url ?? 'No pear:// URL yet'}</span>
+                <span className='repo-item__url'>{repo.url ?? 'No gittorrent:// URL yet'}</span>
               </button>
             </li>
           ))}

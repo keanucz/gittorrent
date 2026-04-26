@@ -9,11 +9,11 @@ describe('SettingsRoute', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(tauriApi.settingsGet).mockResolvedValue({
-      PEAR_GIT_DATA_DIR: '/home/user/.pear-git',
-      PEAR_GIT_LOG_LEVEL: 'info',
-      PEAR_GIT_BOOTSTRAP_NODES: '',
-      PEAR_GIT_SEEDER_KEYS: '',
-      PEAR_GIT_CONNECT_TIMEOUT: '10000'
+      GITTORRENT_DATA_DIR: '/home/user/.gittorrent',
+      GITTORRENT_LOG_LEVEL: 'info',
+      GITTORRENT_BOOTSTRAP_NODES: '',
+      GITTORRENT_SEEDER_KEYS: '',
+      GITTORRENT_CONNECT_TIMEOUT: '10000'
     })
   })
 
@@ -22,7 +22,7 @@ describe('SettingsRoute', () => {
 
     await waitFor(() => {
       const input = screen.getByLabelText(/Storage Directory/i) as HTMLInputElement
-      expect(input.value).toBe('/home/user/.pear-git')
+      expect(input.value).toBe('/home/user/.gittorrent')
     })
   })
 
@@ -38,7 +38,7 @@ describe('SettingsRoute', () => {
     fireEvent.click(saveBtn)
 
     expect(tauriApi.settingsSet).toHaveBeenCalledWith({
-      key: 'PEAR_GIT_DATA_DIR',
+      key: 'GITTORRENT_DATA_DIR',
       value: '/new/path'
     })
   })
@@ -55,6 +55,8 @@ describe('SettingsRoute', () => {
     const applyBtn = screen.getByRole('button', { name: /Apply Now/i })
     fireEvent.click(applyBtn)
 
-    expect(tauriApi.setLogLevel).toHaveBeenCalledWith('debug')
+    await waitFor(() => {
+      expect(tauriApi.setLogLevel).toHaveBeenCalledWith('debug')
+    })
   })
 })

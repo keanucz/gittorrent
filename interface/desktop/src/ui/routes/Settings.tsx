@@ -2,20 +2,20 @@ import { useEffect, useState } from 'react'
 import { setLogLevel, settingsGet, settingsSet } from '../services/tauri-api'
 
 type SettingsForm = {
-  PEAR_GIT_DATA_DIR: string
-  PEAR_GIT_LOG_LEVEL: string
-  PEAR_GIT_BOOTSTRAP_NODES: string
-  PEAR_GIT_SEEDER_KEYS: string
-  PEAR_GIT_CONNECT_TIMEOUT: string
+  GITTORRENT_DATA_DIR: string
+  GITTORRENT_LOG_LEVEL: string
+  GITTORRENT_BOOTSTRAP_NODES: string
+  GITTORRENT_SEEDER_KEYS: string
+  GITTORRENT_CONNECT_TIMEOUT: string
 }
 
 export function SettingsRoute () {
   const [form, setForm] = useState<SettingsForm>({
-    PEAR_GIT_DATA_DIR: '',
-    PEAR_GIT_LOG_LEVEL: 'info',
-    PEAR_GIT_BOOTSTRAP_NODES: '',
-    PEAR_GIT_SEEDER_KEYS: '',
-    PEAR_GIT_CONNECT_TIMEOUT: '10000'
+    GITTORRENT_DATA_DIR: '',
+    GITTORRENT_LOG_LEVEL: 'info',
+    GITTORRENT_BOOTSTRAP_NODES: '',
+    GITTORRENT_SEEDER_KEYS: '',
+    GITTORRENT_CONNECT_TIMEOUT: '10000'
   })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -31,11 +31,11 @@ export function SettingsRoute () {
         }
 
         setForm({
-          PEAR_GIT_DATA_DIR: settings.PEAR_GIT_DATA_DIR,
-          PEAR_GIT_LOG_LEVEL: settings.PEAR_GIT_LOG_LEVEL,
-          PEAR_GIT_BOOTSTRAP_NODES: settings.PEAR_GIT_BOOTSTRAP_NODES,
-          PEAR_GIT_SEEDER_KEYS: settings.PEAR_GIT_SEEDER_KEYS,
-          PEAR_GIT_CONNECT_TIMEOUT: settings.PEAR_GIT_CONNECT_TIMEOUT
+          GITTORRENT_DATA_DIR: settings.GITTORRENT_DATA_DIR,
+          GITTORRENT_LOG_LEVEL: settings.GITTORRENT_LOG_LEVEL,
+          GITTORRENT_BOOTSTRAP_NODES: settings.GITTORRENT_BOOTSTRAP_NODES,
+          GITTORRENT_SEEDER_KEYS: settings.GITTORRENT_SEEDER_KEYS,
+          GITTORRENT_CONNECT_TIMEOUT: settings.GITTORRENT_CONNECT_TIMEOUT
         })
       } catch (cause) {
         if (mounted) {
@@ -58,8 +58,8 @@ export function SettingsRoute () {
 
     try {
       await settingsSet({ key, value: form[key] })
-      if (key === 'PEAR_GIT_LOG_LEVEL') {
-        await setLogLevel(form.PEAR_GIT_LOG_LEVEL)
+      if (key === 'GITTORRENT_LOG_LEVEL') {
+        await setLogLevel(form.GITTORRENT_LOG_LEVEL)
         setNotice('Log verbosity updated without restart.')
       } else {
         setNotice(`${key} saved.`)
@@ -79,42 +79,42 @@ export function SettingsRoute () {
         <div className='settings-group'>
           <h3>Core Defaults</h3>
           <div className='field-group'>
-            <label className='field-label' htmlFor='set-data-dir'>Storage Directory (PEAR_GIT_DATA_DIR)</label>
-            <input id='set-data-dir' className='field-input' value={form.PEAR_GIT_DATA_DIR} onChange={(event) => setForm((p) => ({ ...p, PEAR_GIT_DATA_DIR: event.target.value }))} placeholder='~/.pear-git' />
-            <button type='button' className='sidebar__link' disabled={busy} onClick={() => void saveKey('PEAR_GIT_DATA_DIR')}>Save</button>
+            <label className='field-label' htmlFor='set-data-dir'>Storage Directory (GITTORRENT_DATA_DIR)</label>
+            <input id='set-data-dir' className='field-input' value={form.GITTORRENT_DATA_DIR} onChange={(event) => setForm((p) => ({ ...p, GITTORRENT_DATA_DIR: event.target.value }))} placeholder='~/.gittorrent' />
+            <button type='button' className='sidebar__link' disabled={busy} onClick={() => void saveKey('GITTORRENT_DATA_DIR')}>Save</button>
           </div>
 
           <div className='field-group'>
-            <label className='field-label' htmlFor='set-log-level'>Log Verbosity (PEAR_GIT_LOG_LEVEL)</label>
-            <select id='set-log-level' className='field-input' value={form.PEAR_GIT_LOG_LEVEL} onChange={(event) => setForm((p) => ({ ...p, PEAR_GIT_LOG_LEVEL: event.target.value }))}>
+            <label className='field-label' htmlFor='set-log-level'>Log Verbosity (GITTORRENT_LOG_LEVEL)</label>
+            <select id='set-log-level' className='field-input' value={form.GITTORRENT_LOG_LEVEL} onChange={(event) => setForm((p) => ({ ...p, GITTORRENT_LOG_LEVEL: event.target.value }))}>
               <option value='error'>Error</option>
               <option value='warn'>Warning</option>
               <option value='info'>Info</option>
               <option value='debug'>Debug</option>
               <option value='trace'>Trace</option>
             </select>
-            <button type='button' className='sidebar__link' disabled={busy} onClick={() => void saveKey('PEAR_GIT_LOG_LEVEL')}>Apply Now</button>
+            <button type='button' className='sidebar__link' disabled={busy} onClick={() => void saveKey('GITTORRENT_LOG_LEVEL')}>Apply Now</button>
           </div>
         </div>
 
         <div className='settings-group'>
           <h3>Network & DHT</h3>
           <div className='field-group'>
-            <label className='field-label' htmlFor='set-bootstrap'>Bootstrap Nodes (PEAR_GIT_BOOTSTRAP_NODES)</label>
-            <input id='set-bootstrap' className='field-input' value={form.PEAR_GIT_BOOTSTRAP_NODES} onChange={(event) => setForm((p) => ({ ...p, PEAR_GIT_BOOTSTRAP_NODES: event.target.value }))} placeholder='host:port,host:port' />
-            <button type='button' className='sidebar__link' disabled={busy} onClick={() => void saveKey('PEAR_GIT_BOOTSTRAP_NODES')}>Save</button>
+            <label className='field-label' htmlFor='set-bootstrap'>Bootstrap Nodes (GITTORRENT_BOOTSTRAP_NODES)</label>
+            <input id='set-bootstrap' className='field-input' value={form.GITTORRENT_BOOTSTRAP_NODES} onChange={(event) => setForm((p) => ({ ...p, GITTORRENT_BOOTSTRAP_NODES: event.target.value }))} placeholder='host:port,host:port' />
+            <button type='button' className='sidebar__link' disabled={busy} onClick={() => void saveKey('GITTORRENT_BOOTSTRAP_NODES')}>Save</button>
           </div>
 
           <div className='field-group'>
-            <label className='field-label' htmlFor='set-seeder-keys'>Default Seeder Keys (PEAR_GIT_SEEDER_KEYS)</label>
-            <input id='set-seeder-keys' className='field-input' value={form.PEAR_GIT_SEEDER_KEYS} onChange={(event) => setForm((p) => ({ ...p, PEAR_GIT_SEEDER_KEYS: event.target.value }))} placeholder='pear://key1,pear://key2' />
-            <button type='button' className='sidebar__link' disabled={busy} onClick={() => void saveKey('PEAR_GIT_SEEDER_KEYS')}>Save</button>
+            <label className='field-label' htmlFor='set-seeder-keys'>Default Seeder Keys (GITTORRENT_SEEDER_KEYS)</label>
+            <input id='set-seeder-keys' className='field-input' value={form.GITTORRENT_SEEDER_KEYS} onChange={(event) => setForm((p) => ({ ...p, GITTORRENT_SEEDER_KEYS: event.target.value }))} placeholder='gittorrent://key1,gittorrent://key2' />
+            <button type='button' className='sidebar__link' disabled={busy} onClick={() => void saveKey('GITTORRENT_SEEDER_KEYS')}>Save</button>
           </div>
 
           <div className='field-group'>
             <label className='field-label' htmlFor='set-timeout'>Connect Timeout (ms)</label>
-            <input id='set-timeout' className='field-input' type='number' value={form.PEAR_GIT_CONNECT_TIMEOUT} onChange={(event) => setForm((p) => ({ ...p, PEAR_GIT_CONNECT_TIMEOUT: event.target.value }))} />
-            <button type='button' className='sidebar__link' disabled={busy} onClick={() => void saveKey('PEAR_GIT_CONNECT_TIMEOUT')}>Save</button>
+            <input id='set-timeout' className='field-input' type='number' value={form.GITTORRENT_CONNECT_TIMEOUT} onChange={(event) => setForm((p) => ({ ...p, GITTORRENT_CONNECT_TIMEOUT: event.target.value }))} />
+            <button type='button' className='sidebar__link' disabled={busy} onClick={() => void saveKey('GITTORRENT_CONNECT_TIMEOUT')}>Save</button>
           </div>
         </div>
       </div>

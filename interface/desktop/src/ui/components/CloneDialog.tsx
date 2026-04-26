@@ -14,7 +14,7 @@ export function CloneDialog ({ inProgress, onSubmit }: CloneDialogProps) {
 
   async function submit () {
     if (!PEAR_URL_PATTERN.test(url.trim())) {
-      setError('Clone URL must match pear://<base58-key>.')
+      setError('Clone URL must match gittorrent://<base58-key>.')
       return
     }
 
@@ -32,8 +32,8 @@ export function CloneDialog ({ inProgress, onSubmit }: CloneDialogProps) {
   return (
     <div className='dialog-card'>
       <h3 className='status-card__label'>Clone Repository</h3>
-      <p className='route-copy'>Clone from a pear:// URL into an absolute destination path.</p>
-      <label className='field-label' htmlFor='clone-url'>pear:// URL</label>
+      <p className='route-copy'>Clone from a gittorrent:// URL into an absolute destination path.</p>
+      <label className='field-label' htmlFor='clone-url'>gittorrent:// URL</label>
       <input id='clone-url' className='field-input' value={url} onChange={(event) => setUrl(event.target.value)} />
       <label className='field-label' htmlFor='clone-path'>Destination Path</label>
       <input id='clone-path' className='field-input' value={path} onChange={(event) => setPath(event.target.value)} />

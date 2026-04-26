@@ -26,11 +26,11 @@ pub fn validate_repo_path(path: &str) -> Result<PathBuf, UiError> {
   Ok(parsed)
 }
 
-pub fn validate_pear_url(url: &str) -> Result<String, UiError> {
-  if !url.starts_with("pear://") {
+pub fn validate_gittorrent_url(url: &str) -> Result<String, UiError> {
+  if !url.starts_with("gittorrent://") {
     return Err(UiError::new(
       UiErrorCode::InvalidInput,
-      "Repository URL must start with pear://",
+      "Repository URL must start with gittorrent://",
     ));
   }
 
@@ -97,7 +97,7 @@ mod tests {
 
   #[test]
   fn rejects_pear_url_with_non_base58() {
-    let result = validate_pear_url("pear://abc-123");
+    let result = validate_gittorrent_url("gittorrent://abc-123");
     assert!(result.is_err());
   }
 
