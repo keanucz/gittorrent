@@ -142,13 +142,14 @@ Keeps the process running, replicating the given repos to any
 connecting peers. Use --daemon to background it automatically.
 `
 
-const WHOAMI_HELP = `pear-git whoami — show your public key
+const WHOAMI_HELP = `pear-git whoami — show your writer key for this repo
 
 USAGE
   pear-git whoami
 
-Prints the 64-char hex public key from your identity file.
-Share this with collaborators so they can run 'pear-git invite <key>'.
+Prints the 64-char hex key that identifies you in this repo.
+Run inside a pear-git repo. Share this with the repo owner so they
+can run 'pear-git invite <key>' to give you write access.
 `
 
 function showHelp (text) {
@@ -231,10 +232,17 @@ async function dispatch () {
 
     case 'whoami': {
       if (wantsHelp()) showHelp(WHOAMI_HELP)
-      const { loadIdentity } = await import('../lib/identity.js')
-      const dataDir = process.env.PEAR_GIT_DATA_DIR || join(homedir(), '.pear-git')
-      const identity = await loadIdentity(dataDir)
-      process.stdout.write(identity.publicKey.toString('hex') + '\n')
+      try {
+        const { loadRepoForCwd } = await import('../lib/commands/load-repo.js')
+        const ctx = await loadRepoForCwd()
+        process.stdout.write(ctx.repo.localKey.toString('hex') + '\n')
+        await ctx.close()
+      } catch {
+        const { loadIdentity } = await import('../lib/identity.js')
+        const dataDir = process.env.PEAR_GIT_DATA_DIR || join(homedir(), '.pear-git')
+        const identity = await loadIdentity(dataDir)
+        process.stdout.write(identity.publicKey.toString('hex') + '\n')
+      }
       break
     }
 
