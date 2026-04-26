@@ -13,6 +13,158 @@ const execFileAsync = promisify(execFile)
 const sub = process.argv[2]
 const args = process.argv.slice(3)
 
+// ---------------------------------------------------------------------------
+// Help text
+// ---------------------------------------------------------------------------
+
+const MAIN_HELP = `pear-git — decentralised git collaboration over Hyperswarm
+
+USAGE
+  pear-git <command> [options]
+
+COMMANDS
+  init              Initialise a pear-git repo in the current git directory
+  invite <pubkey>   Add a collaborator as a writer (optionally --indexer)
+  revoke <pubkey>   Remove a collaborator's write access
+  status            Show repo status, peers, writers, and secrets info
+  seed <url...>     Seed (replicate) one or more repos in the background
+  secrets           Manage encrypted secrets shared across the team
+  whoami            Print your public key (share this with collaborators)
+  help              Show this help message
+
+SECRETS SUBCOMMANDS
+  secrets add <file> [--name <path>]   Encrypt and store a secret file
+  secrets get <path> [--output <file>] Decrypt and print/save a secret
+  secrets list [--json]                List all stored secret paths
+  secrets rm <path>                    Remove a stored secret
+  secrets rotate                       Rotate the secrets key (indexers only)
+
+QUICK START
+  1. cd my-project && git init && git add . && git commit -m "init"
+  2. pear-git init                         # creates pear:// URL
+  3. git push origin master                # pushes to the swarm
+  4. pear-git seed -d                      # seed in background
+  5. # collaborator: git clone pear://...  # clones from the swarm
+  6. pear-git whoami                       # show your key
+  7. pear-git invite <their-pubkey>        # give them write access
+  8. pear-git secrets add .env             # encrypt .env for the team
+  9. # collaborator: pear-git secrets get .env --output .env
+
+ENVIRONMENT
+  PEAR_GIT_DATA_DIR        Data directory (default: ~/.pear-git)
+  PEAR_GIT_LOG_LEVEL       Log level: error|warn|info|debug (default: warn)
+  PEAR_GIT_BOOTSTRAP_NODES Comma-separated DHT bootstrap addresses
+  PEAR_GIT_SEEDER_KEYS     Comma-separated pear:// URLs for seeding
+
+More info: https://github.com/keanucz/gittorrent
+`
+
+const INIT_HELP = `pear-git init — initialise a pear-git repo
+
+USAGE
+  pear-git init [--name <alias>]
+
+Creates an Autobase-backed repo, sets the git origin to a pear:// URL,
+and seeds the current HEAD so collaborators can clone immediately.
+
+Run this inside an existing git repo that has at least one commit.
+`
+
+const INVITE_HELP = `pear-git invite — add a collaborator
+
+USAGE
+  pear-git invite <pubkey> [--indexer]
+
+OPTIONS
+  <pubkey>      64-char hex public key (collaborator runs 'pear-git whoami')
+  --indexer     Grant indexer privileges (can invite/revoke others)
+
+The invited collaborator can then push to the repo. If a secrets key
+exists, it is automatically distributed to the new writer.
+`
+
+const REVOKE_HELP = `pear-git revoke — remove a collaborator
+
+USAGE
+  pear-git revoke <pubkey>
+
+Removes write access. Run 'pear-git secrets rotate' afterwards to
+revoke their access to future secrets.
+`
+
+const STATUS_HELP = `pear-git status — show repo info
+
+USAGE
+  pear-git status [--json]
+
+Shows: repo URL, connected peers, writers, indexers, secrets info.
+`
+
+const SECRETS_HELP = `pear-git secrets — manage encrypted team secrets
+
+USAGE
+  pear-git secrets <subcommand> [options]
+
+SUBCOMMANDS
+  add <file> [--name <path>]   Encrypt a local file and store it in the repo
+  get <path> [--output <file>] Decrypt a stored secret (prints to stdout or file)
+  list [--json]                List all stored secret paths
+  rm <path>                    Remove a secret from the store
+  rotate                       Generate a new key and re-encrypt all secrets
+
+HOW IT WORKS
+  Secrets are encrypted with a shared symmetric key. The key itself is
+  sealed (asymmetrically encrypted) for each writer's public key. When
+  you invite someone, they automatically get access. When you revoke
+  someone, run 'secrets rotate' to generate a new key they can't read.
+
+EXAMPLE
+  pear-git secrets add .env                  # encrypt .env
+  pear-git secrets add prod.key --name keys/prod.key
+  pear-git secrets get .env                  # prints to stdout
+  pear-git secrets get .env --output .env    # writes to file
+  pear-git secrets list                      # show all paths
+  pear-git secrets rotate                    # rotate after revoking someone
+`
+
+const SEED_HELP = `pear-git seed — replicate repos in the background
+
+USAGE
+  pear-git seed [pear://url ...] [--human] [--daemon|-d]
+
+If no URLs are given, seeds the current repo (reads origin from git).
+
+OPTIONS
+  --human     Human-readable event output instead of JSON
+  --daemon -d Run in background (detached process)
+
+Keeps the process running, replicating the given repos to any
+connecting peers. Use --daemon to background it automatically.
+`
+
+const WHOAMI_HELP = `pear-git whoami — show your writer key for this repo
+
+USAGE
+  pear-git whoami
+
+Prints the 64-char hex key that identifies you in this repo.
+Run inside a pear-git repo. Share this with the repo owner so they
+can run 'pear-git invite <key>' to give you write access.
+`
+
+function showHelp (text) {
+  process.stdout.write(text)
+  process.exit(0)
+}
+
+function wantsHelp () {
+  return args.includes('--help') || args.includes('-h') || args[0] === 'help'
+}
+
+// ---------------------------------------------------------------------------
+// Command runners
+// ---------------------------------------------------------------------------
+
 async function runRepoCommand (commandModulePath) {
   const [m, { loadRepoForCwd }] = await Promise.all([
     import(commandModulePath),
@@ -32,25 +184,80 @@ async function runRepoCommand (commandModulePath) {
 }
 
 async function dispatch () {
+  if (!sub || sub === 'help' || sub === '--help' || sub === '-h') {
+    showHelp(MAIN_HELP)
+  }
+
   switch (sub) {
-    case 'init': {
-      const m = await import('../lib/commands/init.js')
-      await m.run(args)
+    case 'init':
+      if (wantsHelp()) showHelp(INIT_HELP)
+      {
+        const m = await import('../lib/commands/init.js')
+        await m.run(args)
+      }
       break
-    }
+
     case 'invite':
+      if (wantsHelp()) showHelp(INVITE_HELP)
       await runRepoCommand('../lib/commands/invite.js')
       break
+
     case 'revoke':
+      if (wantsHelp()) showHelp(REVOKE_HELP)
       await runRepoCommand('../lib/commands/revoke.js')
       break
+
+    case 'status':
+      if (wantsHelp()) showHelp(STATUS_HELP)
+      await runRepoCommand('../lib/commands/status.js')
+      break
+
+    case 'seed':
+      if (wantsHelp()) showHelp(SEED_HELP)
+      if (args.includes('--daemon') || args.includes('-d')) {
+        const { spawn } = await import('node:child_process')
+        const childArgs = args.filter(a => a !== '--daemon' && a !== '-d')
+        const child = spawn(process.execPath, [process.argv[1], 'seed', ...childArgs], {
+          detached: true,
+          stdio: 'ignore',
+          env: process.env
+        })
+        child.unref()
+        process.stderr.write(`Seeder started in background (pid ${child.pid})\n`)
+      } else {
+        const m = await import('../lib/commands/seed.js')
+        await m.run(args)
+      }
+      break
+
+    case 'whoami': {
+      if (wantsHelp()) showHelp(WHOAMI_HELP)
+      try {
+        const { loadRepoForCwd } = await import('../lib/commands/load-repo.js')
+        const ctx = await loadRepoForCwd()
+        process.stdout.write(ctx.repo.localKey.toString('hex') + '\n')
+        await ctx.close()
+      } catch {
+        const { loadIdentity } = await import('../lib/identity.js')
+        const dataDir = process.env.PEAR_GIT_DATA_DIR || join(homedir(), '.pear-git')
+        const identity = await loadIdentity(dataDir)
+        process.stdout.write(identity.publicKey.toString('hex') + '\n')
+      }
+      break
+    }
+
     case 'secrets': {
       const secretsSub = args[0]
+      if (!secretsSub || secretsSub === 'help' || secretsSub === '--help' || secretsSub === '-h') {
+        showHelp(SECRETS_HELP)
+      }
       const secretsArgs = args.slice(1)
+      if (secretsArgs.includes('--help') || secretsArgs.includes('-h')) {
+        showHelp(SECRETS_HELP)
+      }
       const { runAdd, runGet, runList, runRm, runRotate } = await import('../lib/commands/secrets.js')
       const { loadRepoForCwd } = await import('../lib/commands/load-repo.js')
       const ctx = await loadRepoForCwd()
-      // Open the secrets Hyperbee (separate from the Autobase view)
       const dataDir = process.env.PEAR_GIT_DATA_DIR || join(homedir(), '.pear-git')
       const { stdout: originOut } = await execFileAsync('git', ['remote', 'get-url', 'origin'], { cwd: process.cwd() })
       const encoded = originOut.trim().replace(/^pear:\/\//, '')
@@ -76,6 +283,7 @@ async function dispatch () {
           case 'rotate': await runRotate(secretsArgs, secretsOpts); break
           default:
             process.stderr.write(`pear-git: unknown secrets subcommand: ${secretsSub}\n`)
+            process.stderr.write("Run 'pear-git secrets --help' for usage.\n")
             process.exit(1)
         }
       } finally {
@@ -85,22 +293,10 @@ async function dispatch () {
       }
       break
     }
-    case 'seed': {
-      const { run } = await import('../lib/commands/seed.js')
-      const seedSub = args[0]
-      if (seedSub === 'start' || seedSub === 'stop') {
-        process.stdout.write(`Seed ${seedSub} requested\n`)
-        return
-      }
-      // Otherwise it's a list of URLs
-      await run(args)
-      break
-    }
-    case 'status':
-      await runRepoCommand('../lib/commands/status.js')
-      break
+
     default:
-      process.stderr.write(`pear-git: unknown subcommand: ${sub}\n`)
+      process.stderr.write(`pear-git: unknown command: ${sub}\n`)
+      process.stderr.write("Run 'pear-git help' for available commands.\n")
       process.exit(1)
   }
 }

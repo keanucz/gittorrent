@@ -250,7 +250,7 @@ describe('secrets', () => {
     const envelope = testSealKey(secretsKey, keypair.publicKey)
     const publicKeyHex = keypair.publicKey.toString('hex')
     const view = mockView({
-      [`secrets/${publicKeyHex}`]: envelope
+      [`secrets-key/${publicKeyHex}`]: { encryptedKey: envelope.toString('hex'), keyVersion: 1 }
     })
 
     const result = await getMySecretsKey(view, identity)

@@ -30,15 +30,15 @@
 | 24 | pear-git status subcommand | backend-dev | 23, 18 | [x] |
 | 25 | Tests for pear-git secrets subcommands | tdd-test-writer | 09, 11 | [x] |
 | 26 | pear-git secrets add, get, list, rm, rotate | backend-dev | 25, 20 | [x] |
-| 27 | e2e test: clone-push-pull with two in-process peers | tdd-test-writer | 16, 26 | [ ] |
-| 28 | build and install scripts | backend-dev | 16, 26 | [ ] |
-| 29 | Scaffold Tauri desktop app workspace | frontend-dev | 28 | [x] |
-| 30 | Define UI design system and navigation shell | frontend-dev | 29 | [x] |
-| 31 | Implement Tauri command bridge and IPC typing | fullstack-dev | 29 | [x] |
-| 32 | Build repository list and read-only status dashboard | frontend-dev | 30, 31, 24 | [x] |
-| 33 | Implement clone and init repository flows | fullstack-dev | 31, 32, 18 | [x] |
-| 34 | Implement push and pull actions with sync feedback | fullstack-dev | 31, 33, 24 | [x] |
-| 35 | Implement writers management (invite and revoke) | fullstack-dev | 31, 34, 20 | [x] |
-| 36 | Implement secrets management UI flows | fullstack-dev | 31, 34, 26 | [x] |
-| 37 | Implement seeding controls, settings, and hardening | fullstack-dev | 31, 34, 36, 22 | [x] |
-| 38 | UI test suite, packaging, and release readiness | qa-release-dev | 35, 36, 37 | [x] |
+| 27 | e2e test: clone-push-pull with two in-process peers | tdd-test-writer | 16, 26 | [x] |
+| 28 | build and install scripts | backend-dev | 16, 26 | [x] |
+| 29 | Scaffold Tauri desktop app workspace | backend-dev | 28 | [ ] |
+| 30 | Define UI design system and navigation shell | frontend-dev | 29 | [ ] |
+| 31 | Implement Tauri command bridge and IPC typing | backend-dev | 29 | [ ] |
+| 32 | Build repository list and read-only status dashboard | frontend-dev | 30, 31 | [ ] |
+| 33 | Implement clone and init repository flows | frontend-dev | 32 | [ ] |
+| 34 | Implement push and pull actions with sync feedback | frontend-dev | 33 | [ ] |
+| 35 | Implement writers management (invite and revoke) | frontend-dev | 32 | [ ] |
+| 36 | Implement secrets management UI flows | frontend-dev | 32 | [ ] |
+| 37 | Implement seeding controls, settings, and hardening | frontend-dev | 32 | [ ] |
+| 38 | UI test suite, packaging, and release readiness | frontend-dev | 30-37 | [ ] |

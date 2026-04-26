@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+
+import Hyperswarm from 'hyperswarm'
+import { createHash } from 'node:crypto'
+import bs58 from 'bs58'
+
+const url = process.argv[2]
+
+if (!url) {
+  console.log('Usage: node bin/pear-git-diag <pear://URL>')
+  console.log('Tests DHT connectivity for a pear-git repo.')
+  process.exit(1)
+}
+
+const keyStr = url.replace(/^pear:\/\//, '')
+const repoKey = Buffer.from(bs58.decode(keyStr))
+const topic = createHash('sha256').update(repoKey).digest()
+
+let bootstrap
+const bootstrapEnv = process.env.PEAR_GIT_BOOTSTRAP_NODES
+if (bootstrapEnv) {
+  bootstrap = bootstrapEnv.split(',').map(s => {
+    const [host, port] = s.trim().split(':')
+    return { host, port: Number(port) }
+  })
+}
+
+console.log('=== pear-git network diagnostic ===')
+console.log('repo key:', keyStr)
+console.log('topic:   ', topic.toString('hex'))
+if (bootstrap) console.log('bootstrap:', bootstrapEnv)
+console.log('')
+
+const swarm = new Hyperswarm({ bootstrap })
+
+swarm.on('connection', (conn, peerInfo) => {
+  console.log('[CONNECTED] peer:', conn.remotePublicKey?.toString('hex')?.slice(0, 16) + '...')
+  console.log('  topics:', peerInfo.topics.length)
+  conn.on('close', () => console.log('[DISCONNECTED] peer'))
+  conn.on('error', () => {})
+})
+
+console.log('Joining swarm as server+client...')
+const discovery = swarm.join(topic, { server: true, client: true })
+
+discovery.flushed().then(() => {
+  console.log('DHT announce flushed (announced to DHT)')
+  console.log('')
+  console.log('Swarm public key:', swarm.keyPair.publicKey.toString('hex').slice(0, 16) + '...')
+  if (swarm.dht) {
+    try {
+      const addr = swarm.dht.address()
+      console.log('DHT address:', addr.host + ':' + addr.port)
+      console.log('DHT firewalled:', swarm.dht.firewalled)
+    } catch { /* dht not ready */ }
+  }
+  console.log('')
+  console.log('Waiting for peers... (Ctrl+C to stop)')
+  console.log('If no [CONNECTED] message after 30s, peers cannot reach each other.')
+})
+
+let peerCount = 0
+setInterval(() => {
+  const conns = [...swarm.connections]
+  if (conns.length !== peerCount) {
+    peerCount = conns.length
+    console.log(`[STATUS] ${peerCount} active connection(s)`)
+  }
+}, 5000)
+
+process.on('SIGINT', async () => {
+  console.log('\nShutting down...')
+  await swarm.destroy()
+  process.exit(0)
+})
