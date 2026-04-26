@@ -24,11 +24,21 @@
 | 18 | pear-git init subcommand | backend-dev | 17, 13 | [x] |
 | 19 | Tests for pear-git invite and revoke | tdd-test-writer | 11 | [x] |
 | 20 | pear-git invite and revoke subcommands | backend-dev | 19, 18, 09 | [x] |
-| 21 | Tests for pear-git seed | tdd-test-writer | 13 | [ ] |
-| 22 | pear-git seed subcommand | backend-dev | 21, 18 | [ ] |
-| 23 | Tests for pear-git status | tdd-test-writer | 11 | [ ] |
-| 24 | pear-git status subcommand | backend-dev | 23, 18 | [ ] |
+| 21 | Tests for pear-git seed | tdd-test-writer | 13 | [x] |
+| 22 | pear-git seed subcommand | backend-dev | 21, 18 | [x] |
+| 23 | Tests for pear-git status | tdd-test-writer | 11 | [x] |
+| 24 | pear-git status subcommand | backend-dev | 23, 18 | [x] |
 | 25 | Tests for pear-git secrets subcommands | tdd-test-writer | 09, 11 | [x] |
 | 26 | pear-git secrets add, get, list, rm, rotate | backend-dev | 25, 20 | [x] |
 | 27 | e2e test: clone-push-pull with two in-process peers | tdd-test-writer | 16, 26 | [ ] |
 | 28 | build and install scripts | backend-dev | 16, 26 | [ ] |
+| 29 | Scaffold Tauri desktop app workspace | frontend-dev | 28 | [x] |
+| 30 | Define UI design system and navigation shell | frontend-dev | 29 | [x] |
+| 31 | Implement Tauri command bridge and IPC typing | fullstack-dev | 29 | [x] |
+| 32 | Build repository list and read-only status dashboard | frontend-dev | 30, 31, 24 | [x] |
+| 33 | Implement clone and init repository flows | fullstack-dev | 31, 32, 18 | [x] |
+| 34 | Implement push and pull actions with sync feedback | fullstack-dev | 31, 33, 24 | [x] |
+| 35 | Implement writers management (invite and revoke) | fullstack-dev | 31, 34, 20 | [x] |
+| 36 | Implement secrets management UI flows | fullstack-dev | 31, 34, 26 | [x] |
+| 37 | Implement seeding controls, settings, and hardening | fullstack-dev | 31, 34, 36, 22 | [x] |
+| 38 | UI test suite, packaging, and release readiness | qa-release-dev | 35, 36, 37 | [x] |

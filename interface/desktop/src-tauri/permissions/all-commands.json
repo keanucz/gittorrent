@@ -1,0 +1,86 @@
+[
+  {
+    "identifier": "allow-health-check",
+    "commands": ["health_check"]
+  },
+  {
+    "identifier": "allow-repo-list",
+    "commands": ["repo_list"]
+  },
+  {
+    "identifier": "allow-repo-status",
+    "commands": ["repo_status"]
+  },
+  {
+    "identifier": "allow-repo-init",
+    "commands": ["repo_init"]
+  },
+  {
+    "identifier": "allow-repo-clone",
+    "commands": ["repo_clone"]
+  },
+  {
+    "identifier": "allow-repo-pull",
+    "commands": ["repo_pull"]
+  },
+  {
+    "identifier": "allow-repo-push",
+    "commands": ["repo_push"]
+  },
+  {
+    "identifier": "allow-writer-list",
+    "commands": ["writer_list"]
+  },
+  {
+    "identifier": "allow-writer-invite",
+    "commands": ["writer_invite"]
+  },
+  {
+    "identifier": "allow-writer-revoke",
+    "commands": ["writer_revoke"]
+  },
+  {
+    "identifier": "allow-secrets-list",
+    "commands": ["secrets_list"]
+  },
+  {
+    "identifier": "allow-secrets-add",
+    "commands": ["secrets_add"]
+  },
+  {
+    "identifier": "allow-secrets-get",
+    "commands": ["secrets_get"]
+  },
+  {
+    "identifier": "allow-secrets-remove",
+    "commands": ["secrets_remove"]
+  },
+  {
+    "identifier": "allow-secrets-rotate",
+    "commands": ["secrets_rotate"]
+  },
+  {
+    "identifier": "allow-seed-start",
+    "commands": ["seed_start"]
+  },
+  {
+    "identifier": "allow-seed-stop",
+    "commands": ["seed_stop"]
+  },
+  {
+    "identifier": "allow-seed-status",
+    "commands": ["seed_status"]
+  },
+  {
+    "identifier": "allow-settings-get",
+    "commands": ["settings_get"]
+  },
+  {
+    "identifier": "allow-settings-set",
+    "commands": ["settings_set"]
+  },
+  {
+    "identifier": "allow-set-log-level",
+    "commands": ["set_log_level"]
+  }
+]

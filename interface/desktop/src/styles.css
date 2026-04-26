@@ -1,0 +1,105 @@
+:root {
+  color: #0f172a;
+  background: #f8fafc;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.home-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}
+
+.home-panel {
+  width: min(640px, 100%);
+  padding: 2rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.home-panel h1 {
+  margin: 0 0 0.5rem;
+  font-size: 2rem;
+}
+
+.home-panel p {
+  margin: 0;
+  color: #334155;
+}
+
+/* Seed & Settings Improvements */
+.seed-dashboard, .settings-grid {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.status-dot--active {
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+.status-dot--inactive {
+  background: #94a3b8;
+}
+
+.settings-group {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1rem;
+}
+
+.settings-group h3 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  color: #64748b;
+}
+
+.field-group {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.field-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.field-input {
+  padding: 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-family: inherit;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.875rem;
+}
+

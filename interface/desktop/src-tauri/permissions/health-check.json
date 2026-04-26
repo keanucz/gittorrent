@@ -1,0 +1,5 @@
+{
+  "$schema": "../gen/schemas/permission.json",
+  "identifier": "allow-health-check",
+  "commands": ["health_check"]
+}

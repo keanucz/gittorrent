@@ -85,6 +85,20 @@ async function dispatch () {
       }
       break
     }
+    case 'seed': {
+      const { run } = await import('../lib/commands/seed.js')
+      const seedSub = args[0]
+      if (seedSub === 'start' || seedSub === 'stop') {
+        process.stdout.write(`Seed ${seedSub} requested\n`)
+        return
+      }
+      // Otherwise it's a list of URLs
+      await run(args)
+      break
+    }
+    case 'status':
+      await runRepoCommand('../lib/commands/status.js')
+      break
     default:
       process.stderr.write(`pear-git: unknown subcommand: ${sub}\n`)
       process.exit(1)
