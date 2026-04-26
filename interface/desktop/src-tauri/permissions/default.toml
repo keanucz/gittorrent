@@ -10,6 +10,8 @@ permissions = [
   "allow-repo-clone",
   "allow-repo-pull",
   "allow-repo-push",
+  "allow-repo-remove",
+  "allow-repo-touch",
   "allow-writer-list",
   "allow-writer-invite",
   "allow-writer-revoke",
@@ -60,6 +62,16 @@ commands.allow = ["repo_pull"]
 identifier = "allow-repo-push"
 description = "Allow the frontend to call repo_push"
 commands.allow = ["repo_push"]
+
+[[permission]]
+identifier = "allow-repo-remove"
+description = "Allow the frontend to call repo_remove"
+commands.allow = ["repo_remove"]
+
+[[permission]]
+identifier = "allow-repo-touch"
+description = "Allow the frontend to call repo_touch"
+commands.allow = ["repo_touch"]
 
 [[permission]]
 identifier = "allow-writer-list"

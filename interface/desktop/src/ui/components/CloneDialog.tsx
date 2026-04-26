@@ -5,7 +5,7 @@ type CloneDialogProps = {
   onSubmit: (url: string, path: string) => Promise<void>
 }
 
-const PEAR_URL_PATTERN = /^pear:\/\/[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/
+const GITTORRENT_URL_PATTERN = /^gittorrent:\/\/[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/
 
 export function CloneDialog ({ inProgress, onSubmit }: CloneDialogProps) {
   const [url, setUrl] = useState('')
@@ -13,7 +13,7 @@ export function CloneDialog ({ inProgress, onSubmit }: CloneDialogProps) {
   const [error, setError] = useState<string | null>(null)
 
   async function submit () {
-    if (!PEAR_URL_PATTERN.test(url.trim())) {
+    if (!GITTORRENT_URL_PATTERN.test(url.trim())) {
       setError('Clone URL must match gittorrent://<base58-key>.')
       return
     }

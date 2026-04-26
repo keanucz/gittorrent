@@ -117,6 +117,14 @@ export async function repoPush (request: RepoPushRequest): Promise<SyncSummary> 
   })
 }
 
+export async function repoRemove (path: string): Promise<SyncSummary> {
+  return invokeTyped<SyncSummary>('repo_remove', { path })
+}
+
+export async function repoTouch (path: string): Promise<SyncSummary> {
+  return invokeTyped<SyncSummary>('repo_touch', { path })
+}
+
 export async function writerList (request: WriterListRequest): Promise<WriterRecord[]> {
   return invokeTyped<WriterRecord[]>('writer_list', { path: request.path })
 }

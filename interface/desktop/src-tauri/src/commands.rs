@@ -12,6 +12,15 @@ use std::time::Instant;
 pub struct RepoSummary {
   pub path: String,
   pub url: Option<String>,
+  /// Unix timestamp (seconds) of last open.  Zero for entries registered
+  /// via init/clone that haven't been "focused" in the UI yet.  The home
+  /// screen sorts recents by this value descending so the most-recent
+  /// project lands at the top, JetBrains-style.
+  #[serde(default, rename = "lastOpened")]
+  pub last_opened: u64,
+  /// Convenience display name for the sidebar — basename of `path`.
+  #[serde(default)]
+  pub name: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -114,16 +123,36 @@ fn save_registry(repos: &[RepoSummary]) -> Result<(), UiError> {
   Ok(())
 }
 
+fn basename_of(path: &str) -> String {
+  Path::new(path)
+    .file_name()
+    .and_then(|s| s.to_str())
+    .unwrap_or(path)
+    .to_string()
+}
+
+fn now_unix() -> u64 {
+  std::time::SystemTime::now()
+    .duration_since(std::time::UNIX_EPOCH)
+    .map(|d| d.as_secs())
+    .unwrap_or(0)
+}
+
 fn register_repo(path: &str, url: Option<&str>) -> Result<(), UiError> {
   let mut list = load_registry();
+  let now = now_unix();
   if let Some(existing) = list.iter_mut().find(|r| r.path == path) {
     if let Some(u) = url {
       existing.url = Some(u.to_string());
     }
+    existing.name = basename_of(path);
+    existing.last_opened = now;
   } else {
     list.push(RepoSummary {
       path: path.to_string(),
       url: url.map(String::from),
+      last_opened: now,
+      name: basename_of(path),
     });
   }
   save_registry(&list)
@@ -202,16 +231,56 @@ pub fn health_check() -> &'static str {
 #[tauri::command]
 pub fn repo_list() -> Result<Vec<RepoSummary>, UiError> {
   let mut list = load_registry();
-  // Refresh the stored URL by reading origin again — cheap and keeps the UI
-  // in sync when the user runs commands outside the app.
+  // Refresh URL + name by reading origin again — cheap and keeps the UI in
+  // sync when the user renames a dir or re-configures origin outside the app.
   for repo in list.iter_mut() {
+    if repo.name.is_empty() {
+      repo.name = basename_of(&repo.path);
+    }
     if Path::new(&repo.path).exists() {
       if let Some(url) = read_origin_url(Path::new(&repo.path)) {
         repo.url = Some(url);
       }
     }
   }
+  // Sort by last-opened desc so recent projects appear first.
+  list.sort_by(|a, b| b.last_opened.cmp(&a.last_opened));
   Ok(list)
+}
+
+/// Remove `path` from the registry. Does NOT touch the filesystem.  Used by
+/// the home screen's "Remove from Recent" action (right-click / context
+/// menu), matching JetBrains' behaviour.
+#[tauri::command]
+pub fn repo_remove(path: String) -> Result<SyncSummary, UiError> {
+  let mut list = load_registry();
+  let before = list.len();
+  list.retain(|r| r.path != path);
+  if list.len() == before {
+    return Ok(SyncSummary { ok: true, message: "Not in registry".into() });
+  }
+  save_registry(&list)?;
+  Ok(SyncSummary { ok: true, message: "Removed from recents".into() })
+}
+
+/// Bump the `lastOpened` timestamp so the repo floats to the top of the
+/// recents list. Called when the user opens a repo from the home screen.
+#[tauri::command]
+pub fn repo_touch(path: String) -> Result<SyncSummary, UiError> {
+  let mut list = load_registry();
+  let now = now_unix();
+  if let Some(existing) = list.iter_mut().find(|r| r.path == path) {
+    existing.last_opened = now;
+    if existing.name.is_empty() {
+      existing.name = basename_of(&path);
+    }
+    save_registry(&list)?;
+    return Ok(SyncSummary { ok: true, message: "Recency updated".into() });
+  }
+  // Not in registry yet — auto-register (e.g. user drags in an existing repo).
+  let url = read_origin_url(Path::new(&path));
+  register_repo(&path, url.as_deref())?;
+  Ok(SyncSummary { ok: true, message: "Added to recents".into() })
 }
 
 #[tauri::command]

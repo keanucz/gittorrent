@@ -14,6 +14,11 @@ export interface UiError {
 export interface RepoSummary {
   path: string
   url?: string
+  /** Display name (basename of path). Added alongside last_opened for the
+   *  JetBrains-style welcome screen. */
+  name?: string
+  /** Unix timestamp (seconds) of last open. 0 for never-opened entries. */
+  lastOpened?: number
 }
 
 export interface RepoInitRequest {
