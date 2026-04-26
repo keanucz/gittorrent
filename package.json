@@ -16,6 +16,7 @@
     "pear-git": "./bin/pear-git"
   },
   "dependencies": {
+    "@hyperswarm/dht-relay": "^0.4.3",
     "autobase": "^6",
     "bs58": "*",
     "compact-encoding": "*",
@@ -24,7 +25,8 @@
     "hypercore": "^10.38.2",
     "hyperswarm": "*",
     "pino": "*",
-    "sodium-native": "*"
+    "sodium-native": "*",
+    "ws": "^8.20.0"
   },
   "devDependencies": {
     "bare-bundle": "*",

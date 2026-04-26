@@ -20,7 +20,8 @@ function makeEnv (dataDir) {
     ...process.env,
     PATH: `${BIN_DIR}${path.delimiter}${process.env.PATH}`,
     PEAR_GIT_DATA_DIR: dataDir,
-    PEAR_GIT_LOG_LEVEL: 'warn'
+    PEAR_GIT_LOG_LEVEL: 'warn',
+    PEAR_GIT_RELAY: 'off'
   }
 }
 
