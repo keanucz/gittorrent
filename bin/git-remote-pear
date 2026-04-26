@@ -30,7 +30,12 @@ import { openRepo } from '../lib/autobase-repo.js'
 import { createSwarm, connectToSocket, listRepoSockets } from '../lib/swarm.js'
 import { createRemoteHelper } from '../lib/remote-helper.js'
 
-const READY_TIMEOUT_MS = Number(process.env.PEAR_GIT_HELPER_READY_TIMEOUT ?? 10000)
+// Increased default from 10s -> 45s: cross-WAN Autobase replication over a
+// WebSocket relay has higher latency than direct UDP DHT, and the first-clone
+// case has to pull the primary bootstrap core + system view + refs view before
+// any refs become visible. 10s was enough locally but repeatedly timed out on
+// real remote peers. Users can still override via env for CI or LAN tests.
+const READY_TIMEOUT_MS = Number(process.env.PEAR_GIT_HELPER_READY_TIMEOUT ?? 45000)
 
 /**
  * Opens a Corestore at `storePath`. When the directory is already locked by
@@ -120,6 +125,15 @@ async function main () {
 
   const socketCleanups = await connectToAnyRepoSocket(corestore, repoKey)
 
+  // Open the repo BEFORE joining the swarm so that the Autobase
+  // `_primaryBootstrap`, `_local`, and system cores are already registered
+  // in the corestore when the first replication stream attaches.  If we
+  // joined first, the corked muxer could flush its initial announcement
+  // before these cores exist, leading to "peer connected but no cores
+  // advertised" — exactly the silent-replication symptom we were chasing.
+  const repo = await openRepo(corestore, identity, { key: repoKey })
+  progress('Repo opened, syncing...')
+
   let swarm = null
   if (socketCleanups.length > 0) {
     progress(`Connected via local socket (${socketCleanups.length} peer(s))`)
@@ -129,9 +143,6 @@ async function main () {
     await swarm.join(repoKey)
     progress('Announced to DHT, discovering peers...')
   }
-
-  const repo = await openRepo(corestore, identity, { key: repoKey })
-  progress('Repo opened, syncing...')
 
   // Build an object store backed by the Autobase objectsView so that objects
   // seeded during `init` (via repo.putObject) are visible to the fetch path.
