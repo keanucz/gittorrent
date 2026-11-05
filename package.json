@@ -27,7 +27,7 @@
     "hyperswarm": "*",
     "pino": "*",
     "sodium-native": "*",
-    "ws": "^8.20.0"
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "bare-bundle": "*",
